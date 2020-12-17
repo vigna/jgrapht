@@ -27,17 +27,46 @@ import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 
 /**
- * Deprecated implementation of Katz centrality.
+ * Katz centrality implementation.
+ *
+ * <p>
+ * The <a href="https://en.wikipedia.org/wiki/Katz_centrality">wikipedia</a> article contains a nice
+ * description of Katz centrality. Every path coming into a node contributes to its Katz centrality
+ * by &alpha;<sup><var>k</var></sup>, where &alpha; is the <em>damping factor</em> and <var>k</var>
+ * is the length of the path.
+ * </p>
+ *
+ * <p>
+ * This is a simple iterative implementation of Katz centrality which stops after a given number of
+ * iterations or if the Katz centrality values between two iterations do not change more than a
+ * predefined value. Each iteration increases the length of the paths contributing to the centrality
+ * value. Note that unless the damping factor is smaller than the reciprocal of the
+ * <a href="https://en.wikipedia.org/wiki/Spectral_radius">spectral radius</a> of the adjacency
+ * matrix, the computation will not converge.
+ * </p>
+ *
+ * <p>
+ * This implementation makes it possible to provide an exogenous factor in the form of a
+ * {@link ToDoubleFunction} mapping each vertex to its exogenous score. Each path is then multiplied
+ * by the exogenous score of its starting vertex. The {@linkplain #exogenousFactorDefaultFunction()
+ * default exogenous function} maps all vertices to one, as in standard Katz centrality.
+ * </p>
+ *
+ * <p>
+ * Each iteration of the algorithm runs in linear time O(n+m) when n is the number of nodes and m
+ * the number of edges of the graph. The maximum number of iterations can be adjusted by the caller.
+ * The default value is {@link KatzCentrality#MAX_ITERATIONS_DEFAULT}. Also in case of weighted
+ * graphs, negative weights are not expected.
+ * </p>
  *
  * @param <V> the graph vertex type
  * @param <E> the graph edge type
  *
  * @author Dimitrios Michail
  * @author Pratik Tibrewal
- * @deprecated Please use {@link KatzCentrality} instead.
+ * @author Sebastiano Vigna
  */
-@Deprecated
-public final class AlphaCentrality<V, E>
+public final class KatzCentrality<V, E>
     implements
     VertexScoringAlgorithm<V, Double>
 {
@@ -47,8 +76,8 @@ public final class AlphaCentrality<V, E>
     public static final int MAX_ITERATIONS_DEFAULT = 100;
 
     /**
-     * Default value for the tolerance. The calculation will stop if the difference of
-     * AlphaCentrality values between iterations change less than this value.
+     * Default value for the tolerance. The calculation will stop if the difference of Katz
+     * centrality values between iterations change less than this value.
      */
     public static final double TOLERANCE_DEFAULT = 0.0001;
 
@@ -58,84 +87,96 @@ public final class AlphaCentrality<V, E>
     public static final double DAMPING_FACTOR_DEFAULT = 0.01d;
 
     /**
-     * Exogenous factor default value.
+     * Exogenous factor default function (the constant function returning 1).
+     *
+     * @return always 1.
+     * @param <V> the input type of the function.
      */
-    public static final double EXOGENOUS_FACTOR_DEFAULT = 1.0d;
+    public static final <V> ToDoubleFunction<V> exogenousFactorDefaultFunction()
+    {
+        return x -> 1;
+    }
 
     private final Graph<V, E> g;
     private Map<V, Double> scores;
 
     /**
-     * Create and execute an instance of AlphaCentrality.
+     * Create and execute an instance of KatzCentrality.
      *
      * @param g the input graph
      */
-    public AlphaCentrality(final Graph<V, E> g)
+    public KatzCentrality(final Graph<V, E> g)
     {
         this(
-            g, DAMPING_FACTOR_DEFAULT, EXOGENOUS_FACTOR_DEFAULT, MAX_ITERATIONS_DEFAULT,
+            g, DAMPING_FACTOR_DEFAULT, exogenousFactorDefaultFunction(),
+            MAX_ITERATIONS_DEFAULT,
             TOLERANCE_DEFAULT);
     }
 
     /**
-     * Create and execute an instance of AlphaCentrality.
+     * Create and execute an instance of KatzCentrality.
      *
      * @param g the input graph
      * @param dampingFactor the damping factor
      */
-    public AlphaCentrality(final Graph<V, E> g, final double dampingFactor)
+    public KatzCentrality(final Graph<V, E> g, final double dampingFactor)
     {
-        this(g, dampingFactor, EXOGENOUS_FACTOR_DEFAULT, MAX_ITERATIONS_DEFAULT, TOLERANCE_DEFAULT);
+        this(
+            g, dampingFactor, exogenousFactorDefaultFunction(),
+            MAX_ITERATIONS_DEFAULT, TOLERANCE_DEFAULT);
     }
 
     /**
-     * Create and execute an instance of AlphaCentrality.
+     * Create and execute an instance of KatzCentrality.
      *
      * @param g the input graph
      * @param dampingFactor the damping factor
-     * @param exogenousFactor the exogenous factor
+     * @param maxIterations the maximum number of iterations to perform
      */
-    public AlphaCentrality(final Graph<V, E> g, final double dampingFactor, final double exogenousFactor)
+    public KatzCentrality(final Graph<V, E> g, final double dampingFactor, final int maxIterations)
     {
-        this(g, dampingFactor, exogenousFactor, MAX_ITERATIONS_DEFAULT, TOLERANCE_DEFAULT);
+        this(g, dampingFactor, exogenousFactorDefaultFunction(), maxIterations, TOLERANCE_DEFAULT);
     }
 
     /**
-     * Create and execute an instance of AlphaCentrality.
+     * Create and execute an instance of KatzCentrality.
      *
      * @param g the input graph
      * @param dampingFactor the damping factor
-     * @param exogenousFactorFunction ToDoubleFunction a provider of exogenous factors per vertex
+     * @param maxIterations the maximum number of iterations to perform
+     * @param tolerance the calculation will stop if the difference of Katz centrality values
+     *        between iterations change less than this value
      */
-    public AlphaCentrality(
-        final Graph<V, E> g, final double dampingFactor, final ToDoubleFunction<V> exogenousFactorFunction)
+    public KatzCentrality(
+        final Graph<V, E> g, final double dampingFactor, final int maxIterations,
+        final double tolerance)
+    {
+        this(g, dampingFactor, exogenousFactorDefaultFunction(), maxIterations, tolerance);
+    }
+
+    /**
+     * Create and execute an instance of KatzCentrality.
+     *
+     * @param g the input graph
+     * @param dampingFactor the damping factor
+     * @param exogenousFactorFunction a provider of exogenous factor per vertex
+     */
+    public KatzCentrality(
+        final Graph<V, E> g, final double dampingFactor,
+        final ToDoubleFunction<V> exogenousFactorFunction)
     {
         this(g, dampingFactor, exogenousFactorFunction, MAX_ITERATIONS_DEFAULT, TOLERANCE_DEFAULT);
     }
 
     /**
-     * Create and execute an instance of AlphaCentrality.
+     * Create and execute an instance of KatzCentrality.
      *
      * @param g the input graph
      * @param dampingFactor the damping factor
-     * @param exogenousFactor the exogenous factor
+     * @param exogenousFactorFunction a provider of exogenous factor per vertex
      * @param maxIterations the maximum number of iterations to perform
      */
-    public AlphaCentrality(
-        final Graph<V, E> g, final double dampingFactor, final double exogenousFactor, final int maxIterations)
-    {
-        this(g, dampingFactor, exogenousFactor, maxIterations, TOLERANCE_DEFAULT);
-    }
-
-    /**
-     * Create and execute an instance of AlphaCentrality.
-     *
-     * @param g the input graph
-     * @param dampingFactor the damping factor
-     * @param exogenousFactorFunction ToDoubleFunction a provider of exogenous factors per vertex
-     * @param maxIterations the maximum number of iterations to perform
-     */
-    public AlphaCentrality(
+    public KatzCentrality(
         final Graph<V, E> g, final double dampingFactor, final ToDoubleFunction<V> exogenousFactorFunction,
         final int maxIterations)
     {
@@ -143,38 +184,16 @@ public final class AlphaCentrality<V, E>
     }
 
     /**
-     * Create and execute an instance of AlphaCentrality.
+     * Create and execute an instance of KatzCentrality.
      *
      * @param g the input graph
      * @param dampingFactor the damping factor
-     * @param exogenousFactor the exogenous factor
+     * @param exogenousFactorFunction a provider of exogenous factor per vertex
      * @param maxIterations the maximum number of iterations to perform
-     * @param tolerance the calculation will stop if the difference of AlphaCentrality values
+     * @param tolerance the calculation will stop if the difference of Katz centrality values
      *        between iterations change less than this value
      */
-    public AlphaCentrality(
-        final Graph<V, E> g, final double dampingFactor, final double exogenousFactor, final int maxIterations,
-        final double tolerance)
-    {
-        this.g = g;
-        this.scores = new HashMap<>();
-
-        validate(dampingFactor, maxIterations, tolerance);
-        final ToDoubleFunction<V> exofactorFunction = (v) -> exogenousFactor;
-        run(dampingFactor, exofactorFunction, maxIterations, tolerance);
-    }
-
-    /**
-     * Create and execute an instance of AlphaCentrality.
-     *
-     * @param g the input graph
-     * @param dampingFactor the damping factor
-     * @param exogenousFactorFunction ToDoubleFunction a provider of exogenous factors per vertex
-     * @param maxIterations the maximum number of iterations to perform
-     * @param tolerance the calculation will stop if the difference of AlphaCentrality values
-     *        between iterations change less than this value
-     */
-    public AlphaCentrality(
+    public KatzCentrality(
         final Graph<V, E> g, final double dampingFactor, final ToDoubleFunction<V> exogenousFactorFunction,
         final int maxIterations, final double tolerance)
     {
@@ -213,7 +232,7 @@ public final class AlphaCentrality<V, E>
             throw new IllegalArgumentException("Maximum iterations must be positive");
         }
 
-        if (dampingFactor < 0.0 || dampingFactor > 1.0) {
+        if (dampingFactor < 0.0) {
             throw new IllegalArgumentException("Damping factor not valid");
         }
 
@@ -226,15 +245,11 @@ public final class AlphaCentrality<V, E>
         final double dampingFactor, final ToDoubleFunction<V> exofactorFunction, int maxIterations,
         final double tolerance)
     {
-        // initialization
-        final int totalVertices = g.vertexSet().size();
-
-        final double initScore = 1.0d / totalVertices;
         for (final V v : g.vertexSet()) {
-            scores.put(v, initScore);
+            scores.put(v, exofactorFunction.applyAsDouble(v));
         }
 
-        // run AlphaCentrality
+        // run KatzCentrality
         Map<V, Double> nextScores = new HashMap<>();
         double maxChange = tolerance;
 
