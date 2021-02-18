@@ -113,28 +113,32 @@ public class SuccinctIntDirectedGraphSpeedTest {
 		int u = 0;
 		final ProgressLogger pl = new ProgressLogger();
 
-		pl.start("Enumerating edges on sparse representation...");
-		for (final Integer e : sparse.iterables().edges()) {
-			u += sparse.getEdgeSource(e);
-			u += sparse.getEdgeTarget(e);
+		for (int k = 10; k-- != 0;) {
+			pl.start("Enumerating edges on sparse representation...");
+			for (final Integer e : sparse.iterables().edges()) {
+				u += sparse.getEdgeSource(e);
+				u += sparse.getEdgeTarget(e);
+			}
+			pl.done(m);
+
+			SuccinctIntDirectedGraph succinct;
+			final File succinctFile = new File(basename + ".succinct");
+
+			if (succinctFile.exists()) succinct = (SuccinctIntDirectedGraph)BinIO.loadObject(succinctFile);
+			else {
+				succinct = new SuccinctIntDirectedGraph(sparse);
+				BinIO.storeObject(succinct, succinctFile);
+			}
+
+			pl.start("Enumerating edges on succinct representation...");
+
+			for (final Integer e : succinct.iterables().edges()) {
+				u += succinct.getEdgeSource(e);
+				u += succinct.getEdgeTarget(e);
+			}
+			pl.done(m);
 		}
-		pl.done(m);
 
-		SuccinctIntDirectedGraph succinct;
-		final File succinctFile = new File(basename + ".succinct");
-
-		if (succinctFile.exists()) succinct = (SuccinctIntDirectedGraph)BinIO.loadObject(succinctFile);
-		else {
-			succinct = new SuccinctIntDirectedGraph(sparse);
-			BinIO.storeObject(succinct, succinctFile);
-		}
-
-		pl.start("Enumerating edges on succinct representation...");
-
-		for (final Integer e : succinct.iterables().edges()) {
-			u += succinct.getEdgeSource(e);
-			u += succinct.getEdgeTarget(e);
-		}
-		pl.done(m);
+		if (u == 0) System.out.println();
 	}
 }
