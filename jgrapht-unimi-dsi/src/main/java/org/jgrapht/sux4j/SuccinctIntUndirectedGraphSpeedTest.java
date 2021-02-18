@@ -45,7 +45,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 		for (final NodeIterator iterator = graph.nodeIterator(); iterator.hasNext();) {
 			final int x = iterator.nextInt();
 			final LazyIntIterator successors = iterator.successors();
-			for (int s; (s = successors.nextInt()) != -1;) if (x <= s) t++;
+			for (int s; (s = successors.nextInt()) != -1;) if (s <= x) t++;
 		}
 
 		final int m = t;
@@ -85,7 +85,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 							if (!hasNext()) throw new NoSuchElementException();
 							for (;;) {
 								final int s = i.nextInt();
-								if (s != -1 && x <= s) {
+								if (s != -1 && s <= x) {
 									c++;
 									return Pair.of(x, s);
 								}

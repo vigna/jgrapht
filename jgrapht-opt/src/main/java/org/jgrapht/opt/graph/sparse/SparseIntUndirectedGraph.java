@@ -57,7 +57,7 @@ import java.util.function.*;
  */
 public class SparseIntUndirectedGraph
     extends
-    AbstractGraph<Integer, Integer>
+    AbstractGraph<Integer, Integer> implements java.io.Serializable
 {
     protected static final String UNMODIFIABLE = "this graph is unmodifiable";
 
