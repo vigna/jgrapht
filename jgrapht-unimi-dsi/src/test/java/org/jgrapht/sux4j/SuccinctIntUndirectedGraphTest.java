@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR LGPL-2.1-or-later
  */
-package org.jgrapht.opt.graph.sux4j;
+package org.jgrapht.sux4j;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
