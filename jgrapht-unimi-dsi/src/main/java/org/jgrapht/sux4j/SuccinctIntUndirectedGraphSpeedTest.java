@@ -49,6 +49,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 		}
 
 		final int m = t;
+		final int n = graph.numNodes();
 
 		SparseIntUndirectedGraph sparse;
 
@@ -90,6 +91,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 								}
 								i = graph.successors(++x);
 							}
+							if (x < n - 1) i = graph.successors(++x);
 						}
 
 						@Override
