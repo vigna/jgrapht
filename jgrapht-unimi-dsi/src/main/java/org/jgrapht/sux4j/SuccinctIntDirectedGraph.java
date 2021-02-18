@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2020, by Sebastiano Vigna.
+ * (C) Copyright 2020-2021, by Sebastiano Vigna and Contributors.
  *
  * JGraphT : a free Java graph-theory library
  *
@@ -60,7 +60,7 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * <p>
  * If the vertex set is compact (i.e., vertices are numbered from 0 consecutively), space usage will
  * be close to the information-theoretical lower bound (typically, a few times smaller than a
- * {@link SparseIntDirectedGraph}).
+ * {@link SparseIntDirectedGraph}). However, access times will be correspondingly slower.
  *
  * <p>
  * Note that {@linkplain #containsEdge(Integer, Integer) adjacency checks} will be performed
