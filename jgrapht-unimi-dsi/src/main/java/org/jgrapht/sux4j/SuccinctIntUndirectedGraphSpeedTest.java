@@ -38,9 +38,9 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 
 	public static void main(final String args[]) throws IOException, ClassNotFoundException {
 		final ImmutableGraph graph = ImmutableGraph.load(args[0]);
-
 		final String basename = new File(args[0]).getName();
 
+		final int n = graph.numNodes();
 		int t = 0;
 		for (final NodeIterator iterator = graph.nodeIterator(); iterator.hasNext();) {
 			final int x = iterator.nextInt();
@@ -49,11 +49,10 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 		}
 
 		final int m = t;
-		final int n = graph.numNodes();
 
 		SparseIntUndirectedGraph sparse;
-
 		final File sparseFile = new File(basename + ".sparse");
+
 		if (sparseFile.exists()) sparse = (SparseIntUndirectedGraph)BinIO.loadObject(sparseFile);
 		else {
 			sparse = new SparseIntUndirectedGraph(graph.numNodes(), new AbstractObjectList<Pair<Integer, Integer>>() {
@@ -115,6 +114,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 					return m;
 				}
 			});
+
 			BinIO.storeObject(sparse, sparseFile);
 		}
 

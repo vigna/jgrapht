@@ -18,12 +18,14 @@
 
 package org.jgrapht.sux4j;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
+import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -33,68 +35,80 @@ import it.unimi.dsi.webgraph.LazyIntIterators;
 
 public class SuccinctIntDirectedGraphSpeedTest {
 
-	public static void main(final String args[]) throws IOException {
+	public static void main(final String args[]) throws IOException, ClassNotFoundException {
 		final ImmutableGraph graph = ImmutableGraph.load(args[0]);
+		final String basename = new File(args[0]).getName();
+
 		final int n = graph.numNodes();
 		final int m = (int)graph.numArcs();
-		final var sparse = new SparseIntDirectedGraph(graph.numNodes(), new AbstractObjectList<Pair<Integer, Integer>>() {
 
-			@Override
-			public Pair<Integer, Integer> get(final int index) {
-				throw new UnsupportedOperationException();
-			}
+		SparseIntDirectedGraph sparse;
+		final File sparseFile = new File(basename + ".sparse");
 
-			@Override
-			public ObjectListIterator<Pair<Integer, Integer>> iterator() {
-				return new ObjectListIterator<>() {
-					private int c = 0;
-					private int x = -1;
-					LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
-					@Override
-					public boolean hasNext() {
-						return c < m;
-					}
+		if (sparseFile.exists()) sparse = (SparseIntDirectedGraph)BinIO.loadObject(sparseFile);
+		else {
+			sparse = new SparseIntDirectedGraph(graph.numNodes(), new AbstractObjectList<Pair<Integer, Integer>>() {
 
-					@Override
-					public boolean hasPrevious() {
-						throw new UnsupportedOperationException();
-					}
+				@Override
+				public Pair<Integer, Integer> get(final int index) {
+					throw new UnsupportedOperationException();
+				}
 
-					@Override
-					public Pair<Integer, Integer> next() {
-						if (! hasNext()) throw new NoSuchElementException();
-						for(;;) {
-							final int s = i.nextInt();
-							if (s != -1) {
-								c++;
-								return Pair.of(x, s);
-							}
-							if (x < n - 1) i = graph.successors(++x);
+				@Override
+				public ObjectListIterator<Pair<Integer, Integer>> iterator() {
+					return new ObjectListIterator<>() {
+						private int c = 0;
+						private int x = -1;
+						LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
+
+						@Override
+						public boolean hasNext() {
+							return c < m;
 						}
-					}
 
-					@Override
-					public int nextIndex() {
-						throw new UnsupportedOperationException();
-					}
+						@Override
+						public boolean hasPrevious() {
+							throw new UnsupportedOperationException();
+						}
 
-					@Override
-					public Pair<Integer, Integer> previous() {
-						throw new UnsupportedOperationException();
-					}
+						@Override
+						public Pair<Integer, Integer> next() {
+							if (!hasNext()) throw new NoSuchElementException();
+							for (;;) {
+								final int s = i.nextInt();
+								if (s != -1) {
+									c++;
+									return Pair.of(x, s);
+								}
+								if (x < n - 1) i = graph.successors(++x);
+							}
+						}
 
-					@Override
-					public int previousIndex() {
-						throw new UnsupportedOperationException();
-					}
-				};
-			}
+						@Override
+						public int nextIndex() {
+							throw new UnsupportedOperationException();
+						}
 
-			@Override
-			public int size() {
-				return m;
-			}
-		});
+						@Override
+						public Pair<Integer, Integer> previous() {
+							throw new UnsupportedOperationException();
+						}
+
+						@Override
+						public int previousIndex() {
+							throw new UnsupportedOperationException();
+						}
+					};
+				}
+
+				@Override
+				public int size() {
+					return m;
+				}
+			});
+
+			BinIO.storeObject(sparse, sparseFile);
+		}
 
 		int u = 0;
 		final ProgressLogger pl = new ProgressLogger();
@@ -106,7 +120,14 @@ public class SuccinctIntDirectedGraphSpeedTest {
 		}
 		pl.done(m);
 
-		final var succinct = new SuccinctIntDirectedGraph(sparse);
+		SuccinctIntDirectedGraph succinct;
+		final File succinctFile = new File(basename + ".succinct");
+
+		if (succinctFile.exists()) succinct = (SuccinctIntDirectedGraph)BinIO.loadObject(succinctFile);
+		else {
+			succinct = new SuccinctIntDirectedGraph(sparse);
+			BinIO.storeObject(succinct, succinctFile);
+		}
 
 		pl.start("Enumerating edges on succinct representation...");
 
