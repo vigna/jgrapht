@@ -401,7 +401,6 @@ public class SuccinctIntUndirectedGraph
     public Integer getEdgeTarget(final Integer e)
     {
         assertEdgeExist(e);
-        final long cumul = cumulativeOutdegrees.weakPredecessorUnsafe(e);
         return (int) (successors.getLong(e) % n);
     }
 
