@@ -47,11 +47,16 @@ public class SuccinctIntDirectedGraphSpeedTest {
 			public ObjectListIterator<Pair<Integer, Integer>> iterator() {
 				return new ObjectListIterator<>() {
 					private int c = 0;
-					private int x = 0;
+					private int x = -1;
 					LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
 					@Override
 					public boolean hasNext() {
 						return c < m;
+					}
+
+					@Override
+					public boolean hasPrevious() {
+						throw new UnsupportedOperationException();
 					}
 
 					@Override
@@ -63,8 +68,23 @@ public class SuccinctIntDirectedGraphSpeedTest {
 								c++;
 								return Pair.of(x, s);
 							}
-							i = graph.successors(x++);
+							i = graph.successors(++x);
 						}
+					}
+
+					@Override
+					public int nextIndex() {
+						throw new UnsupportedOperationException();
+					}
+
+					@Override
+					public Pair<Integer, Integer> previous() {
+						throw new UnsupportedOperationException();
+					}
+
+					@Override
+					public int previousIndex() {
+						throw new UnsupportedOperationException();
 					}
 				};
 			}
