@@ -35,6 +35,7 @@ public class SuccinctIntDirectedGraphSpeedTest {
 
 	public static void main(final String args[]) throws IOException {
 		final ImmutableGraph graph = ImmutableGraph.load(args[0]);
+		final int n = graph.numNodes();
 		final int m = (int)graph.numArcs();
 		final var sparse = new SparseIntDirectedGraph(graph.numNodes(), new AbstractObjectList<Pair<Integer, Integer>>() {
 
@@ -68,7 +69,7 @@ public class SuccinctIntDirectedGraphSpeedTest {
 								c++;
 								return Pair.of(x, s);
 							}
-							i = graph.successors(++x);
+							if (x < n - 1) i = graph.successors(++x);
 						}
 					}
 

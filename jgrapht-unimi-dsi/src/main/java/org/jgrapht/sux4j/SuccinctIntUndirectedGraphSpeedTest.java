@@ -89,9 +89,8 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 									c++;
 									return Pair.of(x, s);
 								}
-								i = graph.successors(++x);
+								if (x < n - 1) i = graph.successors(++x);
 							}
-							if (x < n - 1) i = graph.successors(++x);
 						}
 
 						@Override
