@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
+import org.jgrapht.GraphIterables;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph;
 
@@ -29,6 +30,7 @@ import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.logging.ProgressLogger;
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import it.unimi.dsi.webgraph.ImmutableGraph;
 import it.unimi.dsi.webgraph.LazyIntIterator;
 import it.unimi.dsi.webgraph.LazyIntIterators;
@@ -118,30 +120,53 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 			BinIO.storeObject(sparse, sparseFile);
 		}
 
+		SuccinctIntUndirectedGraph succinct;
+		final File succinctFile = new File(basename + ".succinct");
+
+		if (succinctFile.exists()) succinct = (SuccinctIntUndirectedGraph)BinIO.loadObject(succinctFile);
+		else {
+			succinct = new SuccinctIntUndirectedGraph(sparse);
+			BinIO.storeObject(succinct, succinctFile);
+		}
+
 		int u = 0;
 		final ProgressLogger pl = new ProgressLogger();
+		XoRoShiRo128PlusRandom r;
+		final GraphIterables<Integer, Integer> sparseIterables = sparse.iterables();
+		final GraphIterables<Integer, Integer> succinctIterables = succinct.iterables();
 
 		for (int k = 10; k-- != 0;) {
 			pl.start("Enumerating edges on sparse representation...");
-			for (final Integer e : sparse.iterables().edges()) {
+			for (final Integer e : sparseIterables.edges()) {
 				u += sparse.getEdgeSource(e);
 				u += sparse.getEdgeTarget(e);
 			}
 			pl.done(m);
 
-			SuccinctIntUndirectedGraph succinct;
-			final File succinctFile = new File(basename + ".succinct");
-
-			if (succinctFile.exists()) succinct = (SuccinctIntUndirectedGraph)BinIO.loadObject(succinctFile);
-			else {
-				succinct = new SuccinctIntUndirectedGraph(sparse);
-				BinIO.storeObject(succinct, succinctFile);
-			}
-
 			pl.start("Enumerating edges on succinct representation...");
-			for (final Integer e : succinct.iterables().edges()) {
+			for (final Integer e : succinctIterables.edges()) {
 				u += succinct.getEdgeSource(e);
 				u += succinct.getEdgeTarget(e);
+			}
+			pl.done(m);
+
+			pl.start("Sampling successors on sparse representation...");
+			r = new XoRoShiRo128PlusRandom(0);
+			for (int i = 100000; i-- != 0;) {
+				for (final Integer e : sparseIterables.outgoingEdgesOf(r.nextInt(n))) {
+					u += sparse.getEdgeSource(e);
+					u += sparse.getEdgeTarget(e);
+				}
+			}
+			pl.done(m);
+
+			pl.start("Sampling edges on succinct representation...");
+			r = new XoRoShiRo128PlusRandom(0);
+			for (int i = 100000; i-- != 0;) {
+				for (final Integer e : succinctIterables.outgoingEdgesOf(r.nextInt(n))) {
+					u += succinct.getEdgeSource(e);
+					u += succinct.getEdgeTarget(e);
+				}
 			}
 			pl.done(m);
 		}
