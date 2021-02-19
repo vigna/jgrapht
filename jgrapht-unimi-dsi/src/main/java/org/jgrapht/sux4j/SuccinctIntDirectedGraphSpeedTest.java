@@ -21,6 +21,7 @@ package org.jgrapht.sux4j;
 import java.io.File;
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.jgrapht.GraphIterables;
 import org.jgrapht.alg.util.Pair;
@@ -138,6 +139,10 @@ public class SuccinctIntDirectedGraphSpeedTest {
 		XoRoShiRo128PlusRandom r;
 		final GraphIterables<Integer, Integer> sparseIterables = sparse.iterables();
 		final GraphIterables<Integer, Integer> succinctIterables = succinct.iterables();
+
+		for (int x = 0; x < n; x++) {
+			if (!sparse.outgoingEdgesOf(x).stream().map(e -> sparse.getEdgeTarget(e)).collect(Collectors.toSet()).equals(succinct.outgoingEdgesOf(x).stream().map(e -> succinct.getEdgeTarget(e)).collect(Collectors.toSet()))) throw new AssertionError("Inconsistent information for node " + x);
+		}
 
 		for (int k = 10; k-- != 0;) {
 			pl.start("Enumerating edges on sparse representation...");
