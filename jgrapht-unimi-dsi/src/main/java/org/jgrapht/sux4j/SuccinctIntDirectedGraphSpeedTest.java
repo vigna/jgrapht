@@ -213,6 +213,26 @@ public class SuccinctIntDirectedGraphSpeedTest {
 			}
 			pl.done(m);
 
+			pl.start("Sampling predecessors on sparse representation...");
+			r = new XoRoShiRo128PlusRandom(0);
+			for (int i = 1000000; i-- != 0;) {
+				for (final Integer e : sparseIterables.incomingEdgesOf(r.nextInt(n))) {
+					u += sparse.getEdgeSource(e);
+					u += sparse.getEdgeTarget(e);
+				}
+			}
+			pl.done(m);
+
+			pl.start("Sampling predecessors on succinct representation...");
+			r = new XoRoShiRo128PlusRandom(0);
+			for (int i = 1000000; i-- != 0;) {
+				for (final Integer e : succinctIterables.incomingEdgesOf(r.nextInt(n))) {
+					u += succinct.getEdgeSource(e);
+					u += succinct.getEdgeTarget(e);
+				}
+			}
+			pl.done(m);
+
 			pl.start("Sampling adjacency on sparse representation...");
 			r = new XoRoShiRo128PlusRandom(0);
 			for (int i = 1000000; i-- != 0;) {
