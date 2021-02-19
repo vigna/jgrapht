@@ -152,7 +152,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 		for (int x = 0; x < n; x++) {
 			final IntOpenHashSet sparseSucc = new IntOpenHashSet();
 			for (final var e : sparse.outgoingEdgesOf(x)) {
-				if (sparse.getAllEdges(sparse.getEdgeSource(e), sparse.getEdgeTarget(e)).isEmpty()) throw new AssertionError("Inconsistent information for edge " + e + " (" + sparse.getEdgeSource(e) + " -> " + sparse.getEdgeTarget(e) + ")");
+				// if (sparse.getAllEdges(sparse.getEdgeSource(e), sparse.getEdgeTarget(e)).isEmpty()) throw new AssertionError("Inconsistent information for edge " + e + " (" + sparse.getEdgeSource(e) + " -> " + sparse.getEdgeTarget(e) + ")");
 				sparseSucc.add(Graphs.getOppositeVertex(sparse, e, x));
 			}
 			final IntOpenHashSet succinctSucc = new IntOpenHashSet();
