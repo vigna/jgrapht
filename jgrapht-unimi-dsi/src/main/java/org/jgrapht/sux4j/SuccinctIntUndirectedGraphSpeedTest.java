@@ -152,7 +152,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 
 			pl.start("Sampling successors on sparse representation...");
 			r = new XoRoShiRo128PlusRandom(0);
-			for (int i = 100000; i-- != 0;) {
+			for (int i = 1000000; i-- != 0;) {
 				for (final Integer e : sparseIterables.outgoingEdgesOf(r.nextInt(n))) {
 					u += sparse.getEdgeSource(e);
 					u += sparse.getEdgeTarget(e);
@@ -162,7 +162,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 
 			pl.start("Sampling successors on succinct representation...");
 			r = new XoRoShiRo128PlusRandom(0);
-			for (int i = 100000; i-- != 0;) {
+			for (int i = 1000000; i-- != 0;) {
 				for (final Integer e : succinctIterables.outgoingEdgesOf(r.nextInt(n))) {
 					u += succinct.getEdgeSource(e);
 					u += succinct.getEdgeTarget(e);
@@ -172,7 +172,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 
 			pl.start("Sampling adjacency on sparse representation...");
 			r = new XoRoShiRo128PlusRandom(0);
-			for (int i = 100000; i-- != 0;) {
+			for (int i = 1000000; i-- != 0;) {
 				for (final Integer e : sparse.getAllEdges(r.nextInt(n), r.nextInt(n))) {
 					u += sparse.getEdgeSource(e);
 					u += sparse.getEdgeTarget(e);
@@ -182,12 +182,13 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 
 			pl.start("Sampling adjacency on succinct representation...");
 			r = new XoRoShiRo128PlusRandom(0);
-			for (int i = 100000; i-- != 0;) {
+			for (int i = 1000000; i-- != 0;) {
 				for (final Integer e : succinct.getAllEdges(r.nextInt(n), r.nextInt(n))) {
 					u += succinct.getEdgeSource(e);
 					u += succinct.getEdgeTarget(e);
 				}
 			}
+			pl.done(m);
 		}
 
 		if (u == 0) System.out.println();
