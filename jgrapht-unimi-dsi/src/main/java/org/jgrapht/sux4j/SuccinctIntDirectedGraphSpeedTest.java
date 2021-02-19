@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.logging.ProgressLogger;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import it.unimi.dsi.webgraph.ArrayListMutableGraph;
 import it.unimi.dsi.webgraph.ImmutableGraph;
 import it.unimi.dsi.webgraph.LazyIntIterator;
 import it.unimi.dsi.webgraph.LazyIntIterators;
@@ -43,6 +44,71 @@ public class SuccinctIntDirectedGraphSpeedTest {
 
 		final int n = graph.numNodes();
 		final int m = (int)graph.numArcs();
+
+		final ArrayListMutableGraph mg = new ArrayListMutableGraph(n);
+		for(final var p: new AbstractObjectList<Pair<Integer, Integer>>() {
+
+			@Override
+			public Pair<Integer, Integer> get(final int index) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public ObjectListIterator<Pair<Integer, Integer>> iterator() {
+				return new ObjectListIterator<>() {
+					private int c = 0;
+					private int x = -1;
+					LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
+
+					@Override
+					public boolean hasNext() {
+						return c < m;
+					}
+
+					@Override
+					public boolean hasPrevious() {
+						throw new UnsupportedOperationException();
+					}
+
+					@Override
+					public Pair<Integer, Integer> next() {
+						if (!hasNext()) throw new NoSuchElementException();
+						for (;;) {
+							final int s = i.nextInt();
+							if (s != -1) {
+								c++;
+								return Pair.of(x, s);
+							}
+							if (x < n - 1) i = graph.successors(++x);
+						}
+					}
+
+					@Override
+					public int nextIndex() {
+						throw new UnsupportedOperationException();
+					}
+
+					@Override
+					public Pair<Integer, Integer> previous() {
+						throw new UnsupportedOperationException();
+					}
+
+					@Override
+					public int previousIndex() {
+						throw new UnsupportedOperationException();
+					}
+				};
+			}
+
+			@Override
+			public int size() {
+				return m;
+			}
+		}) {
+			mg.addArc(p.getFirst(), p.getSecond());
+		}
+
+		System.err.println(graph.equals(mg.immutableView()));
 
 		SparseIntDirectedGraph sparse;
 		final File sparseFile = new File(basename + ".sparse");
