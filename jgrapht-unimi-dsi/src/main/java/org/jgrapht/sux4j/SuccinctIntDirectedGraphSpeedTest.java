@@ -21,12 +21,12 @@ package org.jgrapht.sux4j;
 import java.io.File;
 import java.io.IOException;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 import org.jgrapht.GraphIterables;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
@@ -141,7 +141,14 @@ public class SuccinctIntDirectedGraphSpeedTest {
 		final GraphIterables<Integer, Integer> succinctIterables = succinct.iterables();
 
 		for (int x = 0; x < n; x++) {
-			if (!sparse.outgoingEdgesOf(x).stream().map(e -> sparse.getEdgeTarget(e)).collect(Collectors.toSet()).equals(succinct.outgoingEdgesOf(x).stream().map(e -> succinct.getEdgeTarget(e)).collect(Collectors.toSet()))) throw new AssertionError("Inconsistent information for node " + x);
+			final IntOpenHashSet sparseSucc = new IntOpenHashSet();
+			for (final var e : sparse.outgoingEdgesOf(x)) {
+				if (sparse.getAllEdges(sparse.getEdgeSource(e), sparse.getEdgeTarget(e)).isEmpty()) throw new AssertionError("Inconsistent information for edge " + e + " (" + sparse.getEdgeSource(e) + " -> " + sparse.getEdgeTarget(e) + ")");
+				sparseSucc.add(sparse.getEdgeTarget(e));
+			}
+			final IntOpenHashSet succinctSucc = new IntOpenHashSet();
+			for (final var e : succinct.outgoingEdgesOf(x)) succinctSucc.add(succinct.getEdgeTarget(e));
+			if (!sparseSucc.equals(succinctSucc)) throw new AssertionError("Inconsistent information for node " + x);
 		}
 
 		for (int k = 10; k-- != 0;) {
