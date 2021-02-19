@@ -191,7 +191,6 @@ public class SuccinctIntDirectedGraphSpeedTest {
 				for (final Integer e : succinct.getAllEdges(r.nextInt(n), r.nextInt(n))) {
 					u += succinct.getEdgeSource(e);
 					u += succinct.getEdgeTarget(e);
-					System.err.println(e + " " + succinct.getEdgeSource(e) + " -> " + succinct.getEdgeTarget(e));
 				}
 			}
 			pl.done(m);
