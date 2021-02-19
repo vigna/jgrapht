@@ -153,7 +153,7 @@ public class SuccinctIntDirectedGraphSpeedTest {
 			}
 			pl.done(m);
 
-			pl.start("Sampling edges on succinct representation...");
+			pl.start("Sampling successors on succinct representation...");
 			r = new XoRoShiRo128PlusRandom(0);
 			for (int i = 100000; i-- != 0;) {
 				for (final Integer e : succinctIterables.outgoingEdgesOf(r.nextInt(n))) {
