@@ -125,7 +125,7 @@ public class SparseGraphTest {
 		sparse = new SparseIntDirectedGraph(graph.numNodes(), new PairList(graph));
 
 		for (final var e : sparse.outgoingEdgesOf(469192)) {
-			assert !sparse.getAllEdges(sparse.getEdgeSource(e), sparse.getEdgeTarget(e)).isEmpty();
+			assert !sparse.getAllEdges(sparse.getEdgeSource(e), sparse.getEdgeTarget(e)).isEmpty() : e + " (" + sparse.getEdgeSource(e) + " -> " + sparse.getEdgeTarget(e) + ")";
 		}
 	}
 }
