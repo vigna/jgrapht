@@ -31,12 +31,80 @@ import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.logging.ProgressLogger;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
-import it.unimi.dsi.webgraph.ArrayListMutableGraph;
 import it.unimi.dsi.webgraph.ImmutableGraph;
 import it.unimi.dsi.webgraph.LazyIntIterator;
 import it.unimi.dsi.webgraph.LazyIntIterators;
 
 public class SuccinctIntDirectedGraphSpeedTest {
+
+	public static final class PairList extends AbstractObjectList<Pair<Integer, Integer>> {
+		private final ImmutableGraph graph;
+		private final int n;
+		private final int m;
+
+		public PairList(final ImmutableGraph graph) {
+			this.graph = graph;
+			this.n = graph.numNodes();
+			this.m = (int)graph.numArcs();
+		}
+
+		@Override
+		public Pair<Integer, Integer> get(final int index) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public ObjectListIterator<Pair<Integer, Integer>> iterator() {
+			return new ObjectListIterator<>() {
+				private int c = 0;
+				private int x = -1;
+				LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
+
+				@Override
+				public boolean hasNext() {
+					return c < m;
+				}
+
+				@Override
+				public boolean hasPrevious() {
+					throw new UnsupportedOperationException();
+				}
+
+				@Override
+				public Pair<Integer, Integer> next() {
+					if (!hasNext()) throw new NoSuchElementException();
+					for (;;) {
+						final int s = i.nextInt();
+						if (s != -1) {
+							c++;
+							return Pair.of(x, s);
+						}
+						if (x < n - 1) i = graph.successors(++x);
+					}
+				}
+
+				@Override
+				public int nextIndex() {
+					throw new UnsupportedOperationException();
+				}
+
+				@Override
+				public Pair<Integer, Integer> previous() {
+					throw new UnsupportedOperationException();
+				}
+
+				@Override
+				public int previousIndex() {
+					throw new UnsupportedOperationException();
+				}
+			};
+		}
+
+		@Override
+		public int size() {
+			return m;
+		}
+	}
 
 	public static void main(final String args[]) throws IOException, ClassNotFoundException {
 		final ImmutableGraph graph = ImmutableGraph.load(args[0]);
@@ -45,135 +113,13 @@ public class SuccinctIntDirectedGraphSpeedTest {
 		final int n = graph.numNodes();
 		final int m = (int)graph.numArcs();
 
-		final ArrayListMutableGraph mg = new ArrayListMutableGraph(n);
-		for(final var p: new AbstractObjectList<Pair<Integer, Integer>>() {
-
-			@Override
-			public Pair<Integer, Integer> get(final int index) {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public ObjectListIterator<Pair<Integer, Integer>> iterator() {
-				return new ObjectListIterator<>() {
-					private int c = 0;
-					private int x = -1;
-					LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
-
-					@Override
-					public boolean hasNext() {
-						return c < m;
-					}
-
-					@Override
-					public boolean hasPrevious() {
-						throw new UnsupportedOperationException();
-					}
-
-					@Override
-					public Pair<Integer, Integer> next() {
-						if (!hasNext()) throw new NoSuchElementException();
-						for (;;) {
-							final int s = i.nextInt();
-							if (s != -1) {
-								c++;
-								return Pair.of(x, s);
-							}
-							if (x < n - 1) i = graph.successors(++x);
-						}
-					}
-
-					@Override
-					public int nextIndex() {
-						throw new UnsupportedOperationException();
-					}
-
-					@Override
-					public Pair<Integer, Integer> previous() {
-						throw new UnsupportedOperationException();
-					}
-
-					@Override
-					public int previousIndex() {
-						throw new UnsupportedOperationException();
-					}
-				};
-			}
-
-			@Override
-			public int size() {
-				return m;
-			}
-		}) {
-			mg.addArc(p.getFirst(), p.getSecond());
-		}
-
-		System.err.println(graph.equals(mg.immutableView()));
-
 		SparseIntDirectedGraph sparse;
 		final File sparseFile = new File(basename + ".sparse");
 
 		if (sparseFile.exists()) sparse = (SparseIntDirectedGraph)BinIO.loadObject(sparseFile);
 		else {
-			sparse = new SparseIntDirectedGraph(graph.numNodes(), new AbstractObjectList<Pair<Integer, Integer>>() {
-
-				@Override
-				public Pair<Integer, Integer> get(final int index) {
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public ObjectListIterator<Pair<Integer, Integer>> iterator() {
-					return new ObjectListIterator<>() {
-						private int c = 0;
-						private int x = -1;
-						LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
-
-						@Override
-						public boolean hasNext() {
-							return c < m;
-						}
-
-						@Override
-						public boolean hasPrevious() {
-							throw new UnsupportedOperationException();
-						}
-
-						@Override
-						public Pair<Integer, Integer> next() {
-							if (!hasNext()) throw new NoSuchElementException();
-							for (;;) {
-								final int s = i.nextInt();
-								if (s != -1) {
-									c++;
-									return Pair.of(x, s);
-								}
-								if (x < n - 1) i = graph.successors(++x);
-							}
-						}
-
-						@Override
-						public int nextIndex() {
-							throw new UnsupportedOperationException();
-						}
-
-						@Override
-						public Pair<Integer, Integer> previous() {
-							throw new UnsupportedOperationException();
-						}
-
-						@Override
-						public int previousIndex() {
-							throw new UnsupportedOperationException();
-						}
-					};
-				}
-
-				@Override
-				public int size() {
-					return m;
-				}
-			});
+			final AbstractObjectList<Pair<Integer, Integer>> edges = new PairList(graph);
+			sparse = new SparseIntDirectedGraph(graph.numNodes(), edges);
 
 			BinIO.storeObject(sparse, sparseFile);
 		}
@@ -229,20 +175,15 @@ public class SuccinctIntDirectedGraphSpeedTest {
 			}
 			pl.done(m);
 
-			int c = 0;
 			pl.start("Sampling adjacency on sparse representation...");
 			r = new XoRoShiRo128PlusRandom(0);
 			for (int i = 1000000; i-- != 0;) {
 				for (final Integer e : sparse.getAllEdges(r.nextInt(n), r.nextInt(n))) {
 					u += sparse.getEdgeSource(e);
 					u += sparse.getEdgeTarget(e);
-					c++;
 				}
 			}
 			pl.done(m);
-			System.out.println(c);
-			
-			c = 0;
 
 			pl.start("Sampling adjacency on succinct representation...");
 			r = new XoRoShiRo128PlusRandom(0);
@@ -250,12 +191,10 @@ public class SuccinctIntDirectedGraphSpeedTest {
 				for (final Integer e : succinct.getAllEdges(r.nextInt(n), r.nextInt(n))) {
 					u += succinct.getEdgeSource(e);
 					u += succinct.getEdgeTarget(e);
-					c++;
 					System.err.println(e + " " + succinct.getEdgeSource(e) + " -> " + succinct.getEdgeTarget(e));
 				}
 			}
 			pl.done(m);
-			System.out.println(c);
 		}
 
 		if (u == 0) System.out.println();

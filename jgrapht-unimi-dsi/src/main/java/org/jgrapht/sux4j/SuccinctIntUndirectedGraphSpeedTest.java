@@ -31,13 +31,81 @@ import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.logging.ProgressLogger;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
-import it.unimi.dsi.webgraph.ArrayListMutableGraph;
 import it.unimi.dsi.webgraph.ImmutableGraph;
 import it.unimi.dsi.webgraph.LazyIntIterator;
 import it.unimi.dsi.webgraph.LazyIntIterators;
 import it.unimi.dsi.webgraph.NodeIterator;
 
 public class SuccinctIntUndirectedGraphSpeedTest {
+
+	private static final class SortedPairList extends AbstractObjectList<Pair<Integer, Integer>> {
+		private final ImmutableGraph graph;
+		private final int m;
+		private final int n;
+
+		private SortedPairList(final ImmutableGraph graph, final int m) {
+			this.graph = graph;
+			this.n = graph.numNodes();
+			this.m = m;
+		}
+
+		@Override
+		public Pair<Integer, Integer> get(final int index) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public ObjectListIterator<Pair<Integer, Integer>> iterator() {
+			return new ObjectListIterator<>() {
+				private int c = 0;
+				private int x = -1;
+				LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
+
+				@Override
+				public boolean hasNext() {
+					return c < m;
+				}
+
+				@Override
+				public boolean hasPrevious() {
+					throw new UnsupportedOperationException();
+				}
+
+				@Override
+				public Pair<Integer, Integer> next() {
+					if (!hasNext()) throw new NoSuchElementException();
+					for (;;) {
+						final int s = i.nextInt();
+						if (s != -1 && s <= x) {
+							c++;
+							return Pair.of(x, s);
+						}
+						if (x < n - 1) i = graph.successors(++x);
+					}
+				}
+
+				@Override
+				public int nextIndex() {
+					throw new UnsupportedOperationException();
+				}
+
+				@Override
+				public Pair<Integer, Integer> previous() {
+					throw new UnsupportedOperationException();
+				}
+
+				@Override
+				public int previousIndex() {
+					throw new UnsupportedOperationException();
+				}
+			};
+		}
+
+		@Override
+		public int size() {
+			return m;
+		}
+	}
 
 	public static void main(final String args[]) throws IOException, ClassNotFoundException {
 		final ImmutableGraph graph = ImmutableGraph.load(args[0]);
@@ -53,136 +121,13 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 
 		final int m = t;
 
-		final ArrayListMutableGraph mg = new ArrayListMutableGraph(n);
-		for (final var p : new AbstractObjectList<Pair<Integer, Integer>>() {
-
-			@Override
-			public Pair<Integer, Integer> get(final int index) {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public ObjectListIterator<Pair<Integer, Integer>> iterator() {
-				return new ObjectListIterator<>() {
-					private int c = 0;
-					private int x = -1;
-					LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
-
-					@Override
-					public boolean hasNext() {
-						return c < m;
-					}
-
-					@Override
-					public boolean hasPrevious() {
-						throw new UnsupportedOperationException();
-					}
-
-					@Override
-					public Pair<Integer, Integer> next() {
-						if (!hasNext()) throw new NoSuchElementException();
-						for (;;) {
-							final int s = i.nextInt();
-							if (s != -1 && s <= x) {
-								c++;
-								return Pair.of(x, s);
-							}
-							if (x < n - 1) i = graph.successors(++x);
-						}
-					}
-
-					@Override
-					public int nextIndex() {
-						throw new UnsupportedOperationException();
-					}
-
-					@Override
-					public Pair<Integer, Integer> previous() {
-						throw new UnsupportedOperationException();
-					}
-
-					@Override
-					public int previousIndex() {
-						throw new UnsupportedOperationException();
-					}
-				};
-			}
-
-			@Override
-			public int size() {
-				return m;
-			}
-		}) {
-			mg.addArc(p.getFirst(), p.getSecond());
-			if (!p.getFirst().equals(p.getSecond())) mg.addArc(p.getSecond(), p.getFirst());
-		}
-
-		System.err.println(graph.equals(mg.immutableView()));
-
 		SparseIntUndirectedGraph sparse;
 		final File sparseFile = new File(basename + ".sparse");
 
 		if (sparseFile.exists()) sparse = (SparseIntUndirectedGraph)BinIO.loadObject(sparseFile);
 		else {
-			sparse = new SparseIntUndirectedGraph(graph.numNodes(), new AbstractObjectList<Pair<Integer, Integer>>() {
-
-				@Override
-				public Pair<Integer, Integer> get(final int index) {
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public ObjectListIterator<Pair<Integer, Integer>> iterator() {
-					return new ObjectListIterator<>() {
-						private int c = 0;
-						private int x = -1;
-						LazyIntIterator i = LazyIntIterators.EMPTY_ITERATOR;
-
-						@Override
-						public boolean hasNext() {
-							return c < m;
-						}
-
-						@Override
-						public boolean hasPrevious() {
-							throw new UnsupportedOperationException();
-						}
-
-						@Override
-						public Pair<Integer, Integer> next() {
-							if (!hasNext()) throw new NoSuchElementException();
-							for (;;) {
-								final int s = i.nextInt();
-								if (s != -1 && s <= x) {
-									c++;
-									return Pair.of(x, s);
-								}
-								if (x < n - 1) i = graph.successors(++x);
-							}
-						}
-
-						@Override
-						public int nextIndex() {
-							throw new UnsupportedOperationException();
-						}
-
-						@Override
-						public Pair<Integer, Integer> previous() {
-							throw new UnsupportedOperationException();
-						}
-
-						@Override
-						public int previousIndex() {
-							throw new UnsupportedOperationException();
-						}
-					};
-				}
-
-				@Override
-				public int size() {
-					return m;
-				}
-			});
+			final AbstractObjectList<Pair<Integer, Integer>> edges = new SortedPairList(graph, m);
+			sparse = new SparseIntUndirectedGraph(graph.numNodes(), edges);
 
 			BinIO.storeObject(sparse, sparseFile);
 		}
