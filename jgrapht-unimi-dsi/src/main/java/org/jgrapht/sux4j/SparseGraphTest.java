@@ -118,14 +118,14 @@ public class SparseGraphTest {
 			mg.addArc(p.getFirst(), p.getSecond());
 		}
 
-		if (!graph.equals(mg.immutableView())) throw new AssertionError();
+		assert graph.equals(mg.immutableView());
 
 		SparseIntDirectedGraph sparse;
 
 		sparse = new SparseIntDirectedGraph(graph.numNodes(), new PairList(graph));
 
-		for (int x = 0; x < n; x++) {
-			if (graph.outdegree(x) != sparse.outDegreeOf(x)) System.out.println(x);
+		for (final var e : sparse.outgoingEdgesOf(469192)) {
+			assert !sparse.getAllEdges(sparse.getEdgeSource(e), sparse.getEdgeTarget(e)).isEmpty() : e + " (" + sparse.getEdgeSource(e) + " -> " + sparse.getEdgeTarget(e) + ")";
 		}
 	}
 }
