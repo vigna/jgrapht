@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 
 import org.jgrapht.GraphIterables;
+import org.jgrapht.Graphs;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
@@ -146,6 +148,14 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 		XoRoShiRo128PlusRandom r;
 		final GraphIterables<Integer, Integer> sparseIterables = sparse.iterables();
 		final GraphIterables<Integer, Integer> succinctIterables = succinct.iterables();
+
+		for (int x = 0; x < n; x++) {
+			final IntOpenHashSet sparseSucc = new IntOpenHashSet();
+			for (final var e : sparse.outgoingEdgesOf(x)) sparseSucc.add(Graphs.getOppositeVertex(sparse, e, x));
+			final IntOpenHashSet succinctSucc = new IntOpenHashSet();
+			for (final var e : succinct.outgoingEdgesOf(x)) succinctSucc.add(Graphs.getOppositeVertex(succinct, e, x));
+			if (!sparseSucc.equals(succinctSucc)) throw new AssertionError("Inconsistent information for node " + x);
+		}
 
 		for (int k = 10; k-- != 0;) {
 			pl.start("Enumerating edges on sparse representation...");
