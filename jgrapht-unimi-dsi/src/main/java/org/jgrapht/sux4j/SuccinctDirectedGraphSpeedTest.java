@@ -221,43 +221,39 @@ public class SuccinctDirectedGraphSpeedTest {
 
 			pl.start("Sampling predecessors on sparse representation...");
 			r = new XoRoShiRo128PlusRandom(0);
+            c = 0;
 			for (int i = 1000000; i-- != 0;) {
 				for (final Integer e : sparseIterables.incomingEdgesOf(r.nextInt(n))) {
 					u += sparse.getEdgeSource(e);
 					u += sparse.getEdgeTarget(e);
+                    c++;
 				}
 			}
-			pl.done(m);
+            pl.done(c);
 
 			pl.start("Sampling predecessors on succinct representation...");
 			r = new XoRoShiRo128PlusRandom(0);
+            c = 0;
 			for (int i = 1000000; i-- != 0;) {
                 for (final IntIntPair e : succinctIterables.incomingEdgesOf(r.nextInt(n))) {
 					u += succinct.getEdgeSource(e);
 					u += succinct.getEdgeTarget(e);
+                    c++;
 				}
 			}
-			pl.done(m);
+            pl.done(c);
 
-			pl.start("Sampling adjacency on sparse representation...");
-			r = new XoRoShiRo128PlusRandom(0);
-			for (int i = 1000000; i-- != 0;) {
-				for (final Integer e : sparse.getAllEdges(source[i], target[i])) {
-					u += sparse.getEdgeSource(e);
-					u += sparse.getEdgeTarget(e);
-				}
-			}
-			pl.done(1000000);
+            pl.start("Sampling adjacency on sparse representation...");
+            for (int i = 1000000; i-- != 0;) {
+                u += sparse.containsEdge(source[i], target[i]) ? 0 : 1;
+            }
+            pl.done(1000000);
 
-			pl.start("Sampling adjacency on succinct representation...");
-			r = new XoRoShiRo128PlusRandom(0);
-			for (int i = 1000000; i-- != 0;) {
-                for (final IntIntPair e : succinct.getAllEdges(source[i], target[i])) {
-					u += succinct.getEdgeSource(e);
-					u += succinct.getEdgeTarget(e);
-				}
-			}
-			pl.done(1000000);
+            pl.start("Sampling adjacency on succinct representation...");
+            for (int i = 1000000; i-- != 0;) {
+                u += succinct.containsEdge(source[i], target[i]) ? 0 : 1;
+            }
+            pl.done(1000000);
 		}
 
 		if (u == 0) System.out.println();

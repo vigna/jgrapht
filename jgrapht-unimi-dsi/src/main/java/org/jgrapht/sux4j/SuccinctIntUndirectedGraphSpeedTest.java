@@ -225,23 +225,17 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 			}
 			pl.done(c);
 
-			pl.start("Sampling adjacency on sparse representation...");
-			for (int i = 1000000; i-- != 0;) {
-				for (final Integer e : sparse.getAllEdges(source[i], target[i])) {
-					u += sparse.getEdgeSource(e);
-					u += sparse.getEdgeTarget(e);
-				}
-			}
-			pl.done(1000000);
+            pl.start("Sampling adjacency on sparse representation...");
+            for (int i = 1000000; i-- != 0;) {
+                u += sparse.containsEdge(source[i], target[i]) ? 0 : 1;
+            }
+            pl.done(1000000);
 
-			pl.start("Sampling adjacency on succinct representation...");
-			for (int i = 1000000; i-- != 0;) {
-				for (final Integer e : succinct.getAllEdges(source[i], target[i])) {
-					u += succinct.getEdgeSource(e);
-					u += succinct.getEdgeTarget(e);
-				}
-			}
-			pl.done(1000000);
+            pl.start("Sampling adjacency on succinct representation...");
+            for (int i = 1000000; i-- != 0;) {
+                u += succinct.containsEdge(source[i], target[i]) ? 0 : 1;
+            }
+            pl.done(1000000);
 		}
 		if (u == 0) System.out.println();
 	}
