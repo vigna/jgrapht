@@ -27,6 +27,7 @@ import org.jgrapht.Graphs;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph;
 
+import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
@@ -149,6 +150,31 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 		final GraphIterables<Integer, Integer> sparseIterables = sparse.iterables();
 		final GraphIterables<Integer, Integer> succinctIterables = succinct.iterables();
 
+		// Source and target for adjacency tests
+		final int source[] = new int[1000000];
+		final int target[] = new int[1000000];
+
+		// Sample about 500000 edges
+		r = new XoRoShiRo128PlusRandom(0);
+		final double prob = 500000. / succinctIterables.edgeCount();
+		int p = 0;
+
+		for (final Integer e : succinctIterables.edges()) {
+			if (r.nextDouble() <= prob) {
+				source[p] = succinct.getEdgeSource(e);
+				target[p] = succinct.getEdgeTarget(e);
+				p++;
+			}
+		}
+
+		for (; p < 1000000; p++) {
+			source[p] = r.nextInt(n);
+			target[p] = r.nextInt(n);
+		}
+
+		IntArrays.shuffle(source, new XoRoShiRo128PlusRandom(0));
+		IntArrays.shuffle(target, new XoRoShiRo128PlusRandom(0));
+
 		for (int x = 0; x < n; x++) {
 			final IntOpenHashSet sparseSucc = new IntOpenHashSet();
 			for (final var e : sparse.outgoingEdgesOf(x)) {
@@ -196,9 +222,8 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 			pl.done(m);
 
 			pl.start("Sampling adjacency on sparse representation...");
-			r = new XoRoShiRo128PlusRandom(0);
 			for (int i = 1000000; i-- != 0;) {
-				for (final Integer e : sparse.getAllEdges(r.nextInt(n), r.nextInt(n))) {
+				for (final Integer e : sparse.getAllEdges(source[i], target[i])) {
 					u += sparse.getEdgeSource(e);
 					u += sparse.getEdgeTarget(e);
 				}
@@ -206,9 +231,8 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 			pl.done(m);
 
 			pl.start("Sampling adjacency on succinct representation...");
-			r = new XoRoShiRo128PlusRandom(0);
 			for (int i = 1000000; i-- != 0;) {
-				for (final Integer e : succinct.getAllEdges(r.nextInt(n), r.nextInt(n))) {
+				for (final Integer e : succinct.getAllEdges(source[i], target[i])) {
 					u += succinct.getEdgeSource(e);
 					u += succinct.getEdgeTarget(e);
 				}
