@@ -148,7 +148,7 @@ public class SuccinctIntDirectedGraphSpeedTest {
 		// Sample about 500000 edges
 		r = new XoRoShiRo128PlusRandom(0);
 		final double prob = 500000. / succinctIterables.edgeCount();
-		int p = 0;
+		int p = 0, c;
 
 		for (final Integer e : succinctIterables.edges()) {
 			if (r.nextDouble() <= prob) {
@@ -195,23 +195,27 @@ public class SuccinctIntDirectedGraphSpeedTest {
 
 			pl.start("Sampling successors on sparse representation...");
 			r = new XoRoShiRo128PlusRandom(0);
+			c = 0;
 			for (int i = 1000000; i-- != 0;) {
 				for (final Integer e : sparseIterables.outgoingEdgesOf(r.nextInt(n))) {
 					u += sparse.getEdgeSource(e);
 					u += sparse.getEdgeTarget(e);
+					c++;
 				}
 			}
-			pl.done(m);
+			pl.done(c);
 
 			pl.start("Sampling successors on succinct representation...");
 			r = new XoRoShiRo128PlusRandom(0);
+			c = 0;
 			for (int i = 1000000; i-- != 0;) {
 				for (final Integer e : succinctIterables.outgoingEdgesOf(r.nextInt(n))) {
 					u += succinct.getEdgeSource(e);
 					u += succinct.getEdgeTarget(e);
+					c++;
 				}
 			}
-			pl.done(m);
+			pl.done(c);
 
 			pl.start("Sampling predecessors on sparse representation...");
 			r = new XoRoShiRo128PlusRandom(0);
@@ -241,7 +245,7 @@ public class SuccinctIntDirectedGraphSpeedTest {
 					u += sparse.getEdgeTarget(e);
 				}
 			}
-			pl.done(m);
+			pl.done(1000000);
 
 			pl.start("Sampling adjacency on succinct representation...");
 			r = new XoRoShiRo128PlusRandom(0);
@@ -251,7 +255,7 @@ public class SuccinctIntDirectedGraphSpeedTest {
 					u += succinct.getEdgeTarget(e);
 				}
 			}
-			pl.done(m);
+			pl.done(1000000);
 		}
 
 		if (u == 0) System.out.println();
