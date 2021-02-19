@@ -83,7 +83,7 @@ public class SuccinctIntUndirectedGraphSpeedTest {
 						if (!hasNext()) throw new NoSuchElementException();
 						for (;;) {
 							final int s = i.nextInt();
-							if (s != -1) {
+							if (s != -1 && s <= x) {
 								c++;
 								return Pair.of(x, s);
 							}
