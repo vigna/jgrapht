@@ -26,10 +26,12 @@ import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphIterables;
 import org.jgrapht.alg.util.Pair;
+import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph;
 
 import com.google.common.collect.Iterables;
 
+import it.unimi.dsi.fastutil.ints.IntIntSortedPair;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -42,10 +44,29 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * An immutable undirected graph represented using quasi-succinct data structures.
  *
  * <p>
- * This class is the undirected counterpart of {@link SuccintIntDirectedGraph}: the same comments
- * apply.
+ * The graph representation of this implementation is similar to that of
+ * {@link SparseIntDirectedGraph}: nodes and edges are initial intervals of the natural numbers.
+ * Under the hood, however, this class uses the {@linkplain EliasFanoMonotoneLongBigList
+ * Elias&ndash;Fano representation of monotone sequences} to represent the positions of ones in the
+ * (linearized) adjacency matrix of the graph. Instances are serializable and thread safe.
+ *
+ * <p>
+ * If the vertex set is compact (i.e., vertices are numbered from 0 consecutively), space usage will
+ * be close to the information-theoretical lower bound (typically, a few times smaller than a
+ * {@link SparseIntUndirectedGraph}).
+ *
+ * <p>
+ * {@linkplain org.jgrapht.GraphIterables#outgoingEdgesOf(Object) Enumeration of edges} is is very
+ * slow. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are very fast and happen in
+ * almost constant time.
+ *
+ * <p>
+ * {@link SuccinctUndirectedGraph} is a much faster implementation with a similar footprint using
+ * {@link IntIntSortedPair} as edge type. Please read the {@linkplain org.jgrapht.sux4j class
+ * documentation} for more information.
  *
  * @author Sebastiano Vigna
+ * @see SuccinctUndirectedGraph
  */
 
 public class SuccinctIntUndirectedGraph
