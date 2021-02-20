@@ -37,6 +37,7 @@ import org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph;
 
 import com.google.common.collect.Iterables;
 
+import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -80,6 +81,7 @@ public class SuccinctIntUndirectedGraph
     {
         private final Graph<Integer, E> graph;
         private final long n;
+        private final int sourceShift;
         private final Function<Integer, Iterable<E>> succ;
         private final boolean sorted;
 
@@ -92,6 +94,7 @@ public class SuccinctIntUndirectedGraph
             final Function<Integer, Iterable<E>> succ)
         {
             this.n = (int) graph.iterables().vertexCount();
+            this.sourceShift = Fast.ceilLog2(n);
             this.graph = graph;
             this.sorted = sorted;
             this.succ = succ;
@@ -128,7 +131,7 @@ public class SuccinctIntUndirectedGraph
             }
             // The predecessor list will not be indexed, so we can gain a few bits of space by
             // subtracting the edge position in the list
-            next = s[i] + x * n - (sorted ? 0 : e++);
+            next = sorted ? s[i] + ((long) x << sourceShift) : s[i] + x * n - e++;
             i++;
             return true;
         }
@@ -212,6 +215,10 @@ public class SuccinctIntUndirectedGraph
     private final EliasFanoIndexedMonotoneLongBigList successors;
     /** The cumulative list of predecessor (edges in reversed order, including loops) lists. */
     private final EliasFanoMonotoneLongBigList predecessors;
+    /** The shift used to read sources. */
+    private final int sourceShift;
+    /** The mask used to read targets (lowest {@link #sourceShift} bits). */
+    private final long targetMask;
 
     /**
      * Creates a new immutable succinct undirected graph from a given undirected graph.
@@ -245,8 +252,12 @@ public class SuccinctIntUndirectedGraph
         assert cumulativeOutdegrees.getLong(cumulativeOutdegrees.size64() - 1) == m;
         assert cumulativeIndegrees.getLong(cumulativeIndegrees.size64() - 1) == m;
 
+        sourceShift = Fast.ceilLog2(n);
+        targetMask = (1L << sourceShift) - 1;
+
         successors = new EliasFanoIndexedMonotoneLongBigList(
-            m, (long) n * n, new CumulativeSuccessors<>(graph, true, iterables::outgoingEdgesOf));
+            m, (long) n << sourceShift,
+            new CumulativeSuccessors<>(graph, true, iterables::outgoingEdgesOf));
         predecessors = new EliasFanoIndexedMonotoneLongBigList(
             m, (long) n * n - m,
             new CumulativeSuccessors<>(graph, false, iterables::incomingEdgesOf));
@@ -394,14 +405,14 @@ public class SuccinctIntUndirectedGraph
     public Integer getEdgeSource(final Integer e)
     {
         assertEdgeExist(e);
-        return (int) (successors.getLong(e) / n);
+        return (int) (successors.getLong(e) >>> sourceShift);
     }
 
     @Override
     public Integer getEdgeTarget(final Integer e)
     {
         assertEdgeExist(e);
-        return (int) (successors.getLong(e) % n);
+        return (int) (successors.getLong(e) & targetMask);
     }
 
     @Override
@@ -434,7 +445,7 @@ public class SuccinctIntUndirectedGraph
             x = y;
             y = t;
         }
-        final long index = successors.indexOfUnsafe(x * (long) n + y);
+        final long index = successors.indexOfUnsafe(((long) x << sourceShift) + y);
         return index != -1 ? (int) index : null;
     }
 
@@ -448,7 +459,7 @@ public class SuccinctIntUndirectedGraph
             x = y;
             y = t;
         }
-        return successors.indexOfUnsafe(x * (long) n + y) != -1;
+        return successors.indexOfUnsafe(((long) x << sourceShift) + y) != -1;
     }
 
     @Override
@@ -541,6 +552,7 @@ public class SuccinctIntUndirectedGraph
             final long[] result = new long[2];
             graph.cumulativeIndegrees.get(target, result);
             final int d = (int) (result[1] - result[0]);
+            final int sourceShift = graph.sourceShift;
             final EliasFanoIndexedMonotoneLongBigList successors = graph.successors;
             final LongBigListIterator iterator = graph.predecessors.listIterator(result[0]);
 
@@ -559,7 +571,7 @@ public class SuccinctIntUndirectedGraph
                         final long source = iterator.nextLong() - base--;
                         if (source == target && i-- == 0)
                             return false;
-                        final long v = source * n + target;
+                        final long v = (source << sourceShift) + target;
                         assert v == successors.successor(v) : v + " != " + successors.successor(v);
                         edge = (int) successors.successorIndexUnsafe(v);
                         assert graph.getEdgeSource(edge).longValue() == source;

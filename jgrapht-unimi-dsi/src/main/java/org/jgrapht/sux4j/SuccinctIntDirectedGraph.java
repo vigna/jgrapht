@@ -98,7 +98,7 @@ public class SuccinctIntDirectedGraph
     {
         private final Graph<Integer, E> graph;
         private final long n;
-        private final int shift;
+        private final int sourceShift;
         private final Function<Integer, Iterable<E>> succ;
         private final boolean strict;
 
@@ -111,7 +111,7 @@ public class SuccinctIntDirectedGraph
             final boolean strict)
         {
             this.n = graph.iterables().vertexCount();
-            this.shift = Fast.ceilLog2(n);
+            this.sourceShift = Fast.ceilLog2(n);
             this.graph = graph;
             this.succ = succ;
             this.strict = strict;
@@ -138,7 +138,7 @@ public class SuccinctIntDirectedGraph
             }
             // The predecessor list will not be indexed, so we can gain a few bits of space by
             // subtracting the edge position in the list
-            next = strict ? s[i] + ((long) x << shift) : s[i] + x * n - e++;
+            next = strict ? s[i] + ((long) x << sourceShift) : s[i] + x * n - e++;
             i++;
             return true;
         }
@@ -201,7 +201,9 @@ public class SuccinctIntDirectedGraph
     private final EliasFanoIndexedMonotoneLongBigList successors;
     /** The cumulative list of predecessor lists. */
     private final EliasFanoMonotoneLongBigList predecessors;
+    /** The shift used to read sources. */
     private final int sourceShift;
+    /** The mask used to read targets (lowest {@link #sourceShift} bits). */
     private final long targetMask;
     /**
      * Creates a new immutable succinct directed graph from a given directed graph.
@@ -236,14 +238,15 @@ public class SuccinctIntDirectedGraph
         assert cumulativeOutdegrees.getLong(cumulativeOutdegrees.size64() - 1) == m;
         assert cumulativeIndegrees.getLong(cumulativeIndegrees.size64() - 1) == m;
 
+        sourceShift = Fast.ceilLog2(n);
+        targetMask = (1L << sourceShift) - 1;
+
         successors = new EliasFanoIndexedMonotoneLongBigList(
-            m, (long) n << Fast.ceilLog2(n),
+            m, (long) n << sourceShift,
             new CumulativeSuccessors<>(graph, iterables::outgoingEdgesOf, true));
         predecessors = new EliasFanoIndexedMonotoneLongBigList(
             m, (long) n * n - m,
             new CumulativeSuccessors<>(graph, iterables::incomingEdgesOf, false));
-        sourceShift = Fast.ceilLog2(n);
-        targetMask = (1L << sourceShift) - 1;
     }
 
     /**
@@ -406,7 +409,7 @@ public class SuccinctIntDirectedGraph
     public Integer getEdgeSource(final Integer e)
     {
         assertEdgeExist(e);
-        return (int) (successors.getLong(e) >> sourceShift);
+        return (int) (successors.getLong(e) >>> sourceShift);
     }
 
     @Override
