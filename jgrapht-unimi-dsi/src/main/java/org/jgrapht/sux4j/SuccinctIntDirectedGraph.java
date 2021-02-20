@@ -46,23 +46,15 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * {@link SparseIntDirectedGraph}: nodes and edges are initial intervals of the natural numbers.
  * Under the hood, however, this class uses the {@linkplain EliasFanoMonotoneLongBigList
  * Elias&ndash;Fano representation of monotone sequences} to represent the positions of the ones
- * elements in the (linearized) adjacency matrix of the graph.
+ * elements in the (linearized) adjacency matrix of the graph. Instances are serializable and thread safe.
  *
  * <p>
  * If the vertex set is compact (i.e., vertices are numbered from 0 consecutively), space usage will
  * be close to the information-theoretical lower bound (typically, a few times smaller than a
- * {@link SparseIntDirectedGraph}). However, access times will be correspondingly slower.
+ * {@link SparseIntDirectedGraph}). 
+ 
+ *<p>
  *
- * <p>
- * Note that {@linkplain #containsEdge(Integer, Integer) adjacency checks} will be performed
- * essentially in constant time.
- *
- * <p>
- * The {@linkplain #SuccinctIntDirectedGraph(Graph) constructor} takes an existing graph: the
- * resulting object can be serialized and reused.
- *
- * <p>
- * This class is thread-safe.
  *
  * @author Sebastiano Vigna
  */
