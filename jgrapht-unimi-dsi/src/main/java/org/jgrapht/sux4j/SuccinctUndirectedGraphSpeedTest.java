@@ -138,7 +138,7 @@ public class SuccinctUndirectedGraphSpeedTest {
 		}
 
         SuccinctUndirectedGraph succinct;
-		final File succinctFile = new File(basename + ".succinct");
+        final File succinctFile = new File(basename + ".suxund");
 
         if (succinctFile.exists())
             succinct = (SuccinctUndirectedGraph) BinIO.loadObject(succinctFile);
