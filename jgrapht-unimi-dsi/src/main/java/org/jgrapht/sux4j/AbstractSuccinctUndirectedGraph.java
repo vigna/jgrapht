@@ -1,3 +1,21 @@
+/*
+ * (C) Copyright 2020-2021, by Sebastiano Vigna and Contributors.
+ *
+ * JGraphT : a free Java graph-theory library
+ *
+ * See the CONTRIBUTORS.md file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the
+ * GNU Lesser General Public License v2.1 or later
+ * which is available at
+ * http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR LGPL-2.1-or-later
+ */
+
 package org.jgrapht.sux4j;
 
 import java.util.Arrays;
@@ -12,6 +30,7 @@ import org.jgrapht.graph.DefaultGraphType;
 import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList;
 
 public abstract class AbstractSuccinctUndirectedGraph<E>
     extends
@@ -160,6 +179,29 @@ public abstract class AbstractSuccinctUndirectedGraph<E>
             x++;
             return cumul += d;
         }
+    }
+
+    @Override
+    public int inDegreeOf(final Integer vertex)
+    {
+        return degreeOf(vertex);
+    }
+
+    @Override
+    public int outDegreeOf(final Integer vertex)
+    {
+        return degreeOf(vertex);
+    }
+
+    protected boolean containsEdge(
+        final EliasFanoIndexedMonotoneLongBigList successors, int x, int y)
+    {
+        if (x > y) {
+            final int t = x;
+            x = y;
+            y = t;
+        }
+        return successors.indexOfUnsafe(((long) x << sourceShift) + y) != -1;
     }
 
     @Override

@@ -32,10 +32,8 @@ import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import com.google.common.collect.Iterables;
 
 import it.unimi.dsi.fastutil.ints.IntIntPair;
-import it.unimi.dsi.fastutil.ints.IntSets;
 import it.unimi.dsi.fastutil.longs.LongBigListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSets;
 import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList;
 import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList.EliasFanoIndexedMonotoneLongBigListIterator;
 import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
@@ -149,21 +147,9 @@ public class SuccinctDirectedGraph
     }
 
     @Override
-    public boolean containsVertex(final Integer v)
-    {
-        return v >= 0 && v < n;
-    }
-
-    @Override
     public Set<IntIntPair> edgeSet()
     {
         return new ObjectOpenHashSet<>(iterables().edges().iterator());
-    }
-
-    @Override
-    public int degreeOf(final Integer vertex)
-    {
-        return inDegreeOf(vertex) + outDegreeOf(vertex);
     }
 
     @Override
@@ -224,12 +210,6 @@ public class SuccinctDirectedGraph
     }
 
     @Override
-    public Set<Integer> vertexSet()
-    {
-        return IntSets.fromTo(0, n);
-    }
-
-    @Override
     public Integer getEdgeSource(final IntIntPair e)
     {
         return e.firstInt();
@@ -284,43 +264,6 @@ public class SuccinctDirectedGraph
     public boolean containsEdge(final Integer sourceVertex, final Integer targetVertex)
     {
         return successors.indexOfUnsafe(((long) sourceVertex << sourceShift) + targetVertex) != -1;
-    }
-
-    @Override
-    public Set<IntIntPair> getAllEdges(final Integer sourceVertex, final Integer targetVertex)
-    {
-        final IntIntPair edge = getEdge(sourceVertex, targetVertex);
-        return edge == null ? ObjectSets.emptySet() : ObjectSets.singleton(edge);
-    }
-
-    /**
-     * Ensures that the specified vertex exists in this graph, or else throws exception.
-     *
-     * @param v vertex
-     * @return <code>true</code> if this assertion holds.
-     * @throws IllegalArgumentException if specified vertex does not exist in this graph.
-     */
-    @Override
-    protected boolean assertVertexExist(final Integer v)
-    {
-        if (v < 0 || v >= n)
-            throw new IllegalArgumentException();
-        return true;
-    }
-
-    /**
-     * Ensures that the specified edge exists in this graph, or else throws exception.
-     *
-     * @param e edge
-     * @return <code>true</code> if this assertion holds.
-     * @throws IllegalArgumentException if specified edge does not exist in this graph.
-     */
-    protected boolean assertEdgeExist(final Integer e)
-    {
-        if (e < 0 || e >= m)
-            throw new IllegalArgumentException();
-        return true;
-
     }
 
     private final static class SuccinctGraphIterables

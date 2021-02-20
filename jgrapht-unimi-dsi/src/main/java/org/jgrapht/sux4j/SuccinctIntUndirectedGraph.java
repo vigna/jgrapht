@@ -129,12 +129,6 @@ public class SuccinctIntUndirectedGraph
     }
 
     @Override
-    public boolean containsVertex(final Integer v)
-    {
-        return v >= 0 && v < n;
-    }
-
-    @Override
     public Set<Integer> edgeSet()
     {
         return IntSets.fromTo(0, m);
@@ -159,33 +153,15 @@ public class SuccinctIntUndirectedGraph
     }
 
     @Override
-    public int inDegreeOf(final Integer vertex)
-    {
-        return degreeOf(vertex);
-    }
-
-    @Override
     public IntSet incomingEdgesOf(final Integer vertex)
     {
         return edgesOf(vertex);
     }
 
     @Override
-    public int outDegreeOf(final Integer vertex)
-    {
-        return degreeOf(vertex);
-    }
-
-    @Override
     public IntSet outgoingEdgesOf(final Integer vertex)
     {
         return edgesOf(vertex);
-    }
-
-    @Override
-    public Set<Integer> vertexSet()
-    {
-        return IntSets.fromTo(0, n);
     }
 
     @Override
@@ -219,36 +195,7 @@ public class SuccinctIntUndirectedGraph
     @Override
     public boolean containsEdge(final Integer sourceVertex, final Integer targetVertex)
     {
-        int x = sourceVertex;
-        int y = targetVertex;
-        if (x > y) {
-            final int t = x;
-            x = y;
-            y = t;
-        }
-        return successors.indexOfUnsafe(((long) x << sourceShift) + y) != -1;
-    }
-
-    @Override
-    public Set<Integer> getAllEdges(final Integer sourceVertex, final Integer targetVertex)
-    {
-        final Integer edge = getEdge(sourceVertex, targetVertex);
-        return edge == null ? IntSets.EMPTY_SET : IntSets.singleton(edge);
-    }
-
-    /**
-     * Ensures that the specified vertex exists in this graph, or else throws exception.
-     *
-     * @param v vertex
-     * @return <code>true</code> if this assertion holds.
-     * @throws IllegalArgumentException if specified vertex does not exist in this graph.
-     */
-    @Override
-    protected boolean assertVertexExist(final Integer v)
-    {
-        if (v < 0 || v >= n)
-            throw new IllegalArgumentException();
-        return true;
+        return containsEdge(successors, sourceVertex, targetVertex);
     }
 
     /**
@@ -315,7 +262,6 @@ public class SuccinctIntUndirectedGraph
 
         private Iterable<Integer> reverseSortedEdgesOfNoLoops(final int target)
         {
-            final SuccinctIntUndirectedGraph graph = this.graph;
             final long[] result = new long[2];
             graph.cumulativeIndegrees.get(target, result);
             final int d = (int) (result[1] - result[0]);

@@ -33,10 +33,8 @@ import com.google.common.collect.Iterables;
 
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import it.unimi.dsi.fastutil.ints.IntIntSortedPair;
-import it.unimi.dsi.fastutil.ints.IntSets;
 import it.unimi.dsi.fastutil.longs.LongBigListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSets;
 import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList;
 import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList.EliasFanoIndexedMonotoneLongBigListIterator;
 import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
@@ -132,12 +130,6 @@ public class SuccinctUndirectedGraph
     }
 
     @Override
-    public boolean containsVertex(final Integer v)
-    {
-        return v >= 0 && v < n;
-    }
-
-    @Override
     public Set<IntIntSortedPair> edgeSet()
     {
         return new ObjectOpenHashSet<>(iterables().edges().iterator());
@@ -170,33 +162,15 @@ public class SuccinctUndirectedGraph
     }
 
     @Override
-    public int inDegreeOf(final Integer vertex)
-    {
-        return degreeOf(vertex);
-    }
-
-    @Override
     public Set<IntIntSortedPair> incomingEdgesOf(final Integer vertex)
     {
         return edgesOf(vertex);
     }
 
     @Override
-    public int outDegreeOf(final Integer vertex)
-    {
-        return degreeOf(vertex);
-    }
-
-    @Override
     public Set<IntIntSortedPair> outgoingEdgesOf(final Integer vertex)
     {
         return edgesOf(vertex);
-    }
-
-    @Override
-    public Set<Integer> vertexSet()
-    {
-        return IntSets.fromTo(0, n);
     }
 
     @Override
@@ -259,51 +233,7 @@ public class SuccinctUndirectedGraph
     @Override
     public boolean containsEdge(final Integer sourceVertex, final Integer targetVertex)
     {
-        int x = sourceVertex;
-        int y = targetVertex;
-        if (x > y) {
-            final int t = x;
-            x = y;
-            y = t;
-        }
-        return successors.indexOfUnsafe(((long) x << sourceShift) + y) != -1;
-    }
-
-    @Override
-    public Set<IntIntSortedPair> getAllEdges(final Integer sourceVertex, final Integer targetVertex)
-    {
-        final IntIntSortedPair edge = getEdge(sourceVertex, targetVertex);
-        return edge == null ? ObjectSets.emptySet() : ObjectSets.singleton(edge);
-    }
-
-    /**
-     * Ensures that the specified vertex exists in this graph, or else throws exception.
-     *
-     * @param v vertex
-     * @return <code>true</code> if this assertion holds.
-     * @throws IllegalArgumentException if specified vertex does not exist in this graph.
-     */
-    @Override
-    protected boolean assertVertexExist(final Integer v)
-    {
-        if (v < 0 || v >= n)
-            throw new IllegalArgumentException();
-        return true;
-    }
-
-    /**
-     * Ensures that the specified edge exists in this graph, or else throws exception.
-     *
-     * @param e edge
-     * @return <code>true</code> if this assertion holds.
-     * @throws IllegalArgumentException if specified edge does not exist in this graph.
-     */
-    protected boolean assertEdgeExist(final Integer e)
-    {
-        if (e < 0 || e >= m)
-            throw new IllegalArgumentException();
-        return true;
-
+        return containsEdge(successors, sourceVertex, targetVertex);
     }
 
     private final static class SuccinctGraphIterables
