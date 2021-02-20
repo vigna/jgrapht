@@ -18,6 +18,7 @@
 
 package org.jgrapht.sux4j;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -40,7 +41,11 @@ import it.unimi.dsi.fastutil.objects.ObjectSets;
 public abstract class AbstractSuccinctGraph<E>
     extends
     AbstractGraph<Integer, E>
+    implements
+    Serializable
 {
+    private static final long serialVersionUID = 0L;
+
     protected static final String UNMODIFIABLE = "this graph is unmodifiable";
 
     /** The number of vertices in the graph. */
