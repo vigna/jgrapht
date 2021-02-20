@@ -32,6 +32,14 @@ import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList;
 
+/**
+ * An abstract base class for all succinct undirected implementations.
+ *
+ * <p>
+ * Two subclasses, {@link CumulativeSuccessors} and {@link CumulativeDegrees}, generate the monotone
+ * lists that will be encoded using the Elias&ndash;Fano representation.
+ */
+
 public abstract class AbstractSuccinctUndirectedGraph<E>
     extends
     AbstractSuccinctGraph<E>
@@ -43,12 +51,13 @@ public abstract class AbstractSuccinctUndirectedGraph<E>
     }
 
     /**
-     * Turns all lists of successors into a single monotone sequence by representing an arc
-     * <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> as
-     * <var>x</var>2<sup>&lceil;log&nbsp;<var>n</var>&rceil;</sup> + <var>y</var>, and all lists of
-     * predecessors into a single monotone sequence by representing an arc
-     * <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> as <var>x</var><var>n</var> + <var>y</var> -
-     * <var>e</var>, where <var>e</var> is the index of the arc in lexicographical order.
+     * Turns all edges <var>x</var>&nbsp;&mdash;&nbsp;<var>y</var>,
+     * <var>x</var>&nbsp;&le;&nbsp;<var>y</var>, into a monotone sequence using the encoding
+     * <var>x</var>2<sup>&lceil;log&nbsp;<var>n</var>&rceil;</sup> + <var>y</var>, or all edges
+     * <var>x</var>&nbsp;&mdash;&nbsp;<var>y</var>, <var>x</var>&nbsp;&ge;&nbsp;<var>y</var>, using
+     * the encoding <var>x</var><var>n</var> + <var>y</var> - <var>e</var>, where <var>e</var> is
+     * the index of the edge in lexicographical order, depending on the value of the {@code sorted}
+     * parameter.
      *
      * @param <E> the graph edge type
      */
@@ -127,8 +136,8 @@ public abstract class AbstractSuccinctUndirectedGraph<E>
 
     /**
      * Iterates over the cumulative degrees (starts with a zero). Depending on the value of
-     * {@code sorted}, only edges with source less than or equal to the target (or vice versa) are
-     * included.
+     * {@code sorted}, only edges whose adjacent vertex is greater than or equal to the base vertex
+     * (or vice versa) are included, depending on the value of the {@code sorted} parameter.
      *
      * @param <E> the graph edge type
      */

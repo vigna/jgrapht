@@ -31,6 +31,14 @@ import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
+/**
+ * An abstract base class for all succinct directed implementations.
+ *
+ * <p>
+ * Two subclasses, {@link CumulativeSuccessors} and {@link CumulativeDegrees}, generate the monotone
+ * lists that will be encoded using the Elias&ndash;Fano representation.
+ */
+
 public abstract class AbstractSuccinctDirectedGraph<E>
     extends
     AbstractSuccinctGraph<E>
@@ -42,12 +50,11 @@ public abstract class AbstractSuccinctDirectedGraph<E>
     }
 
     /**
-     * Turns all lists of successors into a single monotone sequence by representing an arc
-     * <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> as
-     * <var>x</var>2<sup>&lceil;log&nbsp;<var>n</var>&rceil;</sup> + <var>y</var>, and all lists of
-     * predecessors into a single monotone sequence by representing an arc
-     * <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> as <var>x</var><var>n</var> + <var>y</var> -
-     * <var>e</var>, where <var>e</var> is the index of the arc in lexicographical order.
+     * Turns all edges <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> into a monotone sequence using the
+     * encoding <var>x</var>2<sup>&lceil;log&nbsp;<var>n</var>&rceil;</sup> + <var>y</var>, or the
+     * encoding <var>x</var><var>n</var> + <var>y</var> - <var>e</var>, where <var>e</var> is the
+     * index of the edge in lexicographical order, depending on the value of the {@code strict}
+     * parameter.
      *
      * @param <E> the graph edge type
      */
