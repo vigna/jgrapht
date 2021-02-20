@@ -38,6 +38,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList;
  * <p>
  * Two subclasses, {@link CumulativeSuccessors} and {@link CumulativeDegrees}, generate the monotone
  * lists that will be encoded using the Elias&ndash;Fano representation.
+ *
+ * @param <E> the graph edge type
  */
 
 public abstract class AbstractSuccinctUndirectedGraph<E>
