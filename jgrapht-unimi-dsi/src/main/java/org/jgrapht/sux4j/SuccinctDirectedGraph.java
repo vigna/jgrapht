@@ -42,29 +42,27 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * An immutable directed graph represented using quasi-succinct data structures.
  *
  * <p>
- * The graph representation of this implementation is similar to that of
- * {@link SparseIntDirectedGraph}: nodes and edges are initial intervals of the natural numbers.
- * Under the hood, however, this class uses the {@linkplain EliasFanoMonotoneLongBigList
- * Elias&ndash;Fano representation of monotone sequences} to represent the positions of the ones
- * elements in the (linearized) adjacency matrix of the graph.
+ * The graph representation of this implementation uses the {@linkplain EliasFanoMonotoneLongBigList
+ * Elias&ndash;Fano representation of monotone sequences} to represent the positions of ones in the
+ * (linearized) adjacency matrix of the graph. Edges are represented by instances of
+ * {@link IntIntPair}. Instances are serializable and thread safe.
  *
  * <p>
  * If the vertex set is compact (i.e., vertices are numbered from 0 consecutively), space usage will
  * be close to the information-theoretical lower bound (typically, a few times smaller than a
- * {@link SparseIntDirectedGraph}). However, access times will be correspondingly slower.
+ * {@link SparseIntDirectedGraph}).
  *
  * <p>
- * Note that {@linkplain #containsEdge(Integer, Integer) adjacency checks} will be performed
- * essentially in constant time.
+ * All accessors are very fast. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
+ * happen in almost constant time.
  *
  * <p>
- * The {@linkplain #SuccinctIntDirectedGraph(Graph) constructor} takes an existing graph: the
- * resulting object can be serialized and reused.
- *
- * <p>
- * This class is thread-safe.
+ * {@link SuccinctDirectedGraph} is a much slower implementation with a similar footprint using
+ * {@link Integer} as edge type. Please read the {@linkplain org.jgrapht.sux4j class documentation}
+ * for more information.
  *
  * @author Sebastiano Vigna
+ * @see SuccinctIntDirectedGraph
  */
 
 public class SuccinctDirectedGraph
@@ -385,25 +383,26 @@ public class SuccinctDirectedGraph
             graph.assertVertexExist(vertex);
             final long[] result = new long[2];
             graph.cumulativeOutdegrees.get(vertex, result);
-            final var successors = graph.successors;
-            final int n = graph.n;
+            final LongBigListIterator iterator = graph.successors.listIterator(result[0]);
+            final int d = (int) (result[1] - result[0]);
 
             return () -> new Iterator<>() {
-                private long e = result[0];
+                private int i = 0;
 
                 @Override
                 public boolean hasNext()
                 {
-                    return e < result[1];
+                    return i < d;
                 }
 
                 @Override
                 public IntIntPair next()
                 {
-                    if (!hasNext())
+                    if (i == d)
                         throw new NoSuchElementException();
-                    final long t = successors.getLong(e++);
-                    return IntIntPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
+                    i++;
+                    final long e = iterator.nextLong();
+                    return IntIntPair.of((int) (e >>> sourceShift), (int) (e & targetMask));
                 }
 
             };

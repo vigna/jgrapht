@@ -63,6 +63,9 @@ public class SuccinctIntUndirectedGraphTest
         d.addEdge(4, 1);
 
         final SuccinctIntUndirectedGraph s = new SuccinctIntUndirectedGraph(d);
+        assertEquals(5, d.iterables().vertexCount());
+        assertEquals(7, d.iterables().edgeCount());
+
         assertEquals(2, s.outDegreeOf(0));
         assertEquals(3, s.outDegreeOf(1));
         assertEquals(2, s.outDegreeOf(2));

@@ -43,11 +43,29 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * An immutable undirected graph represented using quasi-succinct data structures.
  *
  * <p>
- * This class is the undirected counterpart of {@link SuccintIntDirectedGraph}: the same comments
- * apply.
+ * The graph representation of this implementation uses the {@linkplain EliasFanoMonotoneLongBigList
+ * Elias&ndash;Fano representation of monotone sequences} to represent the positions of ones in the
+ * (linearized) adjacency matrix of the graph. Edges are represented by instances of
+ * {@link IntIntSortedPair}. Instances are serializable and thread safe.
+ *
+ * <p>
+ * If the vertex set is compact (i.e., vertices are numbered from 0 consecutively), space usage will
+ * be close to the information-theoretical lower bound (typically, a few times smaller than a
+ * {@link SparseIntUndirectedGraph}).
+ *
+ * <p>
+ * All accessors are very fast. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
+ * happen in almost constant time.
+ *
+ * <p>
+ * {@link SuccinctIntUndirectedGraph} is a much slower implementation with a similar footprint using
+ * {@link Integer} as edge type. Please read the {@linkplain org.jgrapht.sux4j class documentation}
+ * for more information.
  *
  * @author Sebastiano Vigna
+ * @see SuccinctIntUndirectedGraph
  */
+
 
 public class SuccinctUndirectedGraph
     extends

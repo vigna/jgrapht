@@ -30,6 +30,7 @@ import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
 import com.google.common.collect.Iterables;
 
+import it.unimi.dsi.fastutil.ints.IntIntPair;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -45,26 +46,27 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * The graph representation of this implementation is similar to that of
  * {@link SparseIntDirectedGraph}: nodes and edges are initial intervals of the natural numbers.
  * Under the hood, however, this class uses the {@linkplain EliasFanoMonotoneLongBigList
- * Elias&ndash;Fano representation of monotone sequences} to represent the positions of the ones
- * elements in the (linearized) adjacency matrix of the graph.
+ * Elias&ndash;Fano representation of monotone sequences} to represent the positions of ones in the
+ * (linearized) adjacency matrix of the graph. Instances are serializable and thread safe.
  *
  * <p>
  * If the vertex set is compact (i.e., vertices are numbered from 0 consecutively), space usage will
  * be close to the information-theoretical lower bound (typically, a few times smaller than a
- * {@link SparseIntDirectedGraph}). However, access times will be correspondingly slower.
+ * {@link SparseIntDirectedGraph}).
  *
  * <p>
- * Note that {@linkplain #containsEdge(Integer, Integer) adjacency checks} will be performed
- * essentially in constant time.
+ * {@linkplain org.jgrapht.GraphIterables#outgoingEdgesOf(Object) Enumeration of outgoing edges} is
+ * quite fast, but {@linkplain org.jgrapht.GraphIterables#incomingEdgesOf(Object) enumeration of
+ * incoming edges} is very slow. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
+ * very fast and happen in almost constant time.
  *
  * <p>
- * The {@linkplain #SuccinctIntDirectedGraph(Graph) constructor} takes an existing graph: the
- * resulting object can be serialized and reused.
- *
- * <p>
- * This class is thread-safe.
+ * {@link SuccinctDirectedGraph} is a much faster implementation with a similar footprint using
+ * {@link IntIntPair} as edge type. Please read the {@linkplain org.jgrapht.sux4j class
+ * documentation} for more information.
  *
  * @author Sebastiano Vigna
+ * @see SuccinctDirectedGraph
  */
 
 public class SuccinctIntDirectedGraph
