@@ -200,8 +200,10 @@ public class SuccinctDirectedGraph
         final long[] result = new long[2];
         cumulativeOutdegrees.get(vertex, result);
         final ObjectOpenHashSet<IntIntPair> s = new ObjectOpenHashSet<>();
-        for (int e = (int) result[0]; e < (int) result[1]; e++) {
-            final long t = successors.getLong(e);
+        final LongBigListIterator iterator = successors.listIterator(result[0]);
+
+        for (int d = (int) (result[1] - result[0]); d-- != 0;) {
+            final long t = iterator.nextLong();
             s.add(IntIntPair.of((int) (t >>> sourceShift), (int) (t & targetMask)));
         }
         return s;

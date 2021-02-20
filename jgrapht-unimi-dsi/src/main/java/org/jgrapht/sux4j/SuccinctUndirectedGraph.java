@@ -64,6 +64,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  *
  * @author Sebastiano Vigna
  * @see SuccinctIntUndirectedGraph
+ *
+ * @param <E> the graph edge type
  */
 
 
@@ -167,9 +169,10 @@ public class SuccinctUndirectedGraph
         final long[] result = new long[2];
         cumulativeOutdegrees.get(vertex, result);
         final Set<IntIntSortedPair> s = new ObjectOpenHashSet<>();
+        final LongBigListIterator iterator = successors.listIterator(result[0]);
 
-        for (int e = (int) result[0]; e < (int) result[1]; e++) {
-            final long t = successors.getLong(e);
+        for (int d = (int) (result[1] - result[0]); d-- != 0;) {
+            final long t = iterator.nextLong();
             s.add(IntIntSortedPair.of((int) (t >>> sourceShift), (int) (t & targetMask)));
         }
 

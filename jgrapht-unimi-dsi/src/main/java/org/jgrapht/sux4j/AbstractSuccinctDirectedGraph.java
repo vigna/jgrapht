@@ -37,6 +37,8 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
  * <p>
  * Two subclasses, {@link CumulativeSuccessors} and {@link CumulativeDegrees}, generate the monotone
  * lists that will be encoded using the Elias&ndash;Fano representation.
+ *
+ * @param <E> the graph edge type
  */
 
 public abstract class AbstractSuccinctDirectedGraph<E>
