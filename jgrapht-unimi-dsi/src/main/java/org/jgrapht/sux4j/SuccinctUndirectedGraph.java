@@ -330,23 +330,25 @@ public class SuccinctUndirectedGraph
             final long targetMask = graph.targetMask;
             final long[] result = new long[2];
             graph.cumulativeOutdegrees.get(source, result);
-            final var successors = graph.successors;
-            final int n = graph.n;
+            final var iterator = graph.successors.listIterator(result[0]);
 
             return () -> new Iterator<>()
             {
-                private int e = (int) result[0];
+                private int d = (int) (result[1] - result[0]);
 
                 @Override
                 public boolean hasNext()
                 {
-                    return e < result[1];
+                    return d != 0;
                 }
 
                 @Override
                 public IntIntSortedPair next()
                 {
-                    final long t = successors.getLong(e++);
+                    if (d == 0)
+                        throw new NoSuchElementException();
+                    d--;
+                    final long t = iterator.nextLong();
                     return IntIntSortedPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
                 }
             };
