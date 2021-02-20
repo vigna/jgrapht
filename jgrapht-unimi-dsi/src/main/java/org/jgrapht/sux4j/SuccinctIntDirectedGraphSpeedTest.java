@@ -126,10 +126,11 @@ public class SuccinctIntDirectedGraphSpeedTest {
 			BinIO.storeObject(sparse, sparseFile);
 		}
 
-		SuccinctIntDirectedGraph succinct;
+        SuccinctIntDirectedGraph succinct;
         final File succinctFile = new File(basename + ".suxintdir");
 
-		if (succinctFile.exists()) succinct = (SuccinctIntDirectedGraph)BinIO.loadObject(succinctFile);
+        if (succinctFile.exists())
+            succinct = (SuccinctIntDirectedGraph) BinIO.loadObject(succinctFile);
 		else {
 			succinct = new SuccinctIntDirectedGraph(sparse);
 			BinIO.storeObject(succinct, succinctFile);

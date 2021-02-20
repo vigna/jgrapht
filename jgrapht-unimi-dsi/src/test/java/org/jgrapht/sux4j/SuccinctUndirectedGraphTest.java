@@ -116,6 +116,32 @@ public class SuccinctUndirectedGraphTest
         assertFalse(s.containsEdge(4, 4));
         assertFalse(s.containsEdge(4, 2));
 
+        assertTrue(s.containsEdge(IntIntSortedPair.of(0, 1)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(1, 0)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(1, 2)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(2, 1)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(2, 3)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(3, 2)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(3, 0)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(0, 3)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(3, 3)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(3, 4)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(4, 3)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(4, 1)));
+        assertTrue(s.containsEdge(IntIntSortedPair.of(1, 4)));
+
+        assertFalse(s.containsEdge(IntIntSortedPair.of(0, 0)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(0, 4)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(1, 1)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(1, 3)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(2, 0)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(2, 2)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(2, 4)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(3, 1)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(4, 0)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(4, 4)));
+        assertFalse(s.containsEdge(IntIntSortedPair.of(4, 2)));
+
         assertEquals(Set.of(IntIntSortedPair.of(0, 1), IntIntSortedPair.of(0, 3)), s.edgesOf(0));
         assertEquals(
             Set.of(IntIntSortedPair.of(0, 1), IntIntSortedPair.of(1, 2), IntIntSortedPair.of(1, 4)),

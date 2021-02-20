@@ -130,6 +130,33 @@ public class SuccinctDirectedGraphTest
         assertFalse(s.containsEdge(4, 2));
         assertFalse(s.containsEdge(4, 3));
 
+        assertTrue(s.containsEdge(IntIntPair.of(0, 1)));
+        assertTrue(s.containsEdge(IntIntPair.of(0, 2)));
+        assertTrue(s.containsEdge(IntIntPair.of(1, 2)));
+        assertTrue(s.containsEdge(IntIntPair.of(2, 1)));
+        assertTrue(s.containsEdge(IntIntPair.of(2, 3)));
+        assertTrue(s.containsEdge(IntIntPair.of(3, 0)));
+        assertTrue(s.containsEdge(IntIntPair.of(3, 3)));
+        assertTrue(s.containsEdge(IntIntPair.of(3, 4)));
+        assertTrue(s.containsEdge(IntIntPair.of(4, 1)));
+
+        assertFalse(s.containsEdge(IntIntPair.of(0, 0)));
+        assertFalse(s.containsEdge(IntIntPair.of(0, 3)));
+        assertFalse(s.containsEdge(IntIntPair.of(0, 4)));
+        assertFalse(s.containsEdge(IntIntPair.of(1, 0)));
+        assertFalse(s.containsEdge(IntIntPair.of(1, 1)));
+        assertFalse(s.containsEdge(IntIntPair.of(1, 3)));
+        assertFalse(s.containsEdge(IntIntPair.of(1, 4)));
+        assertFalse(s.containsEdge(IntIntPair.of(2, 0)));
+        assertFalse(s.containsEdge(IntIntPair.of(2, 2)));
+        assertFalse(s.containsEdge(IntIntPair.of(2, 4)));
+        assertFalse(s.containsEdge(IntIntPair.of(3, 1)));
+        assertFalse(s.containsEdge(IntIntPair.of(3, 2)));
+        assertFalse(s.containsEdge(IntIntPair.of(4, 0)));
+        assertFalse(s.containsEdge(IntIntPair.of(4, 4)));
+        assertFalse(s.containsEdge(IntIntPair.of(4, 2)));
+        assertFalse(s.containsEdge(IntIntPair.of(4, 3)));
+
         assertEquals(Set.of(IntIntPair.of(0, 1), IntIntPair.of(0, 2)), s.outgoingEdgesOf(0));
         assertEquals(Set.of(IntIntPair.of(1, 2)), s.outgoingEdgesOf(1));
         assertEquals(Set.of(IntIntPair.of(2, 1), IntIntPair.of(2, 3)), s.outgoingEdgesOf(2));

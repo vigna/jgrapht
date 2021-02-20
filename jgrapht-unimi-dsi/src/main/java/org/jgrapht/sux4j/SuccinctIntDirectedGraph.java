@@ -19,32 +19,22 @@
 package org.jgrapht.sux4j;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.jgrapht.Graph;
 import org.jgrapht.GraphIterables;
-import org.jgrapht.GraphType;
-import org.jgrapht.Graphs;
 import org.jgrapht.alg.util.Pair;
-import org.jgrapht.graph.AbstractGraph;
-import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
 import com.google.common.collect.Iterables;
 
-import it.unimi.dsi.bits.Fast;
-import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSets;
 import it.unimi.dsi.fastutil.longs.LongBigListIterator;
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList;
 import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
 
@@ -79,120 +69,11 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
 
 public class SuccinctIntDirectedGraph
     extends
-    AbstractGraph<Integer, Integer>
+    AbstractSuccinctDirectedGraph<Integer>
     implements
     Serializable
 {
     private static final long serialVersionUID = 0L;
-    protected static final String UNMODIFIABLE = "this graph is unmodifiable";
-
-    /**
-     * Turns all lists of successors into a single monotone sequence by representing an arc
-     * <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> as <var>x</var><var>n</var> + <var>y</var>.
-     *
-     * @param <E> the graph edge type
-     */
-    private final static class CumulativeSuccessors<E>
-        implements
-        LongIterator
-    {
-        private final Graph<Integer, E> graph;
-        private final long n;
-        private final int sourceShift;
-        private final Function<Integer, Iterable<E>> succ;
-        private final boolean strict;
-
-        private int x = -1, d, i, e;
-        private long next = -1;
-        private int[] s = IntArrays.EMPTY_ARRAY;
-
-        public CumulativeSuccessors(
-            final Graph<Integer, E> graph, final Function<Integer, Iterable<E>> succ,
-            final boolean strict)
-        {
-            this.n = graph.iterables().vertexCount();
-            this.sourceShift = Fast.ceilLog2(n);
-            this.graph = graph;
-            this.succ = succ;
-            this.strict = strict;
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            if (next != -1)
-                return true;
-            if (x == n)
-                return false;
-            while (i == d) {
-                if (++x == n)
-                    return false;
-                int d = 0;
-                for (final E e : succ.apply(x)) {
-                    s = IntArrays.grow(s, d + 1);
-                    s[d++] = Graphs.getOppositeVertex(graph, e, x);
-                }
-                Arrays.sort(s, 0, d);
-                this.d = d;
-                i = 0;
-            }
-            // The predecessor list will not be indexed, so we can gain a few bits of space by
-            // subtracting the edge position in the list
-            next = strict ? s[i] + ((long) x << sourceShift) : s[i] + x * n - e++;
-            i++;
-            return true;
-        }
-
-        @Override
-        public long nextLong()
-        {
-            if (!hasNext())
-                throw new NoSuchElementException();
-            final long result = next;
-            next = -1;
-            return result;
-        }
-    }
-
-    /**
-     * Iterates over the cumulative degrees (starts with a zero).
-     */
-    private final static class CumulativeDegrees
-        implements
-        LongIterator
-    {
-        private final Function<Integer, Integer> degreeOf;
-        private final int n;
-        private int i = -1;
-        private long cumul = 0;
-
-        public CumulativeDegrees(final int n, final Function<Integer, Integer> degreeOf)
-        {
-            this.n = n;
-            this.degreeOf = degreeOf;
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return i < n;
-        }
-
-        @Override
-        public long nextLong()
-        {
-            if (!hasNext())
-                throw new NoSuchElementException();
-            if (i == -1)
-                return ++i;
-            return cumul += degreeOf.apply(i++);
-        }
-    }
-
-    /** The number of vertices in the graph. */
-    private final int n;
-    /** The number of edges in the graph. */
-    private final int m;
     /** The cumulative list of outdegrees. */
     private final EliasFanoIndexedMonotoneLongBigList cumulativeOutdegrees;
     /** The cumulative list of indegrees. */
@@ -201,10 +82,6 @@ public class SuccinctIntDirectedGraph
     private final EliasFanoIndexedMonotoneLongBigList successors;
     /** The cumulative list of predecessor lists. */
     private final EliasFanoMonotoneLongBigList predecessors;
-    /** The shift used to read sources. */
-    private final int sourceShift;
-    /** The mask used to read targets (lowest {@link #sourceShift} bits). */
-    private final long targetMask;
 
     /**
      * Creates a new immutable succinct directed graph from a given directed graph.
@@ -215,6 +92,7 @@ public class SuccinctIntDirectedGraph
      */
     public <E> SuccinctIntDirectedGraph(final Graph<Integer, E> graph)
     {
+        super((int) graph.iterables().vertexCount(), (int) graph.iterables().edgeCount());
 
         if (graph.getType().isUndirected())
             throw new IllegalArgumentException("This class supports directed graphs only");
@@ -229,18 +107,12 @@ public class SuccinctIntDirectedGraph
                 "The number of edges (" + iterables.edgeCount() + ") is greater than "
                     + Integer.MAX_VALUE);
 
-        n = (int) iterables.vertexCount();
-        m = (int) iterables.edgeCount();
-
         cumulativeOutdegrees = new EliasFanoIndexedMonotoneLongBigList(
             n + 1, m, new CumulativeDegrees(n, graph::outDegreeOf));
         cumulativeIndegrees =
             new EliasFanoMonotoneLongBigList(n + 1, m, new CumulativeDegrees(n, graph::inDegreeOf));
         assert cumulativeOutdegrees.getLong(cumulativeOutdegrees.size64() - 1) == m;
         assert cumulativeIndegrees.getLong(cumulativeIndegrees.size64() - 1) == m;
-
-        sourceShift = Fast.ceilLog2(n);
-        targetMask = (1L << sourceShift) - 1;
 
         successors = new EliasFanoIndexedMonotoneLongBigList(
             m, (long) n << sourceShift,
@@ -265,42 +137,6 @@ public class SuccinctIntDirectedGraph
     public SuccinctIntDirectedGraph(final int numVertices, final List<Pair<Integer, Integer>> edges)
     {
         this(new SparseIntDirectedGraph(numVertices, edges));
-    }
-
-    @Override
-    public Supplier<Integer> getVertexSupplier()
-    {
-        return null;
-    }
-
-    @Override
-    public Supplier<Integer> getEdgeSupplier()
-    {
-        return null;
-    }
-
-    @Override
-    public Integer addEdge(final Integer sourceVertex, final Integer targetVertex)
-    {
-        throw new UnsupportedOperationException(UNMODIFIABLE);
-    }
-
-    @Override
-    public boolean addEdge(final Integer sourceVertex, final Integer targetVertex, final Integer e)
-    {
-        throw new UnsupportedOperationException(UNMODIFIABLE);
-    }
-
-    @Override
-    public Integer addVertex()
-    {
-        throw new UnsupportedOperationException(UNMODIFIABLE);
-    }
-
-    @Override
-    public boolean addVertex(final Integer v)
-    {
-        throw new UnsupportedOperationException(UNMODIFIABLE);
     }
 
     @Override
@@ -383,24 +219,6 @@ public class SuccinctIntDirectedGraph
     }
 
     @Override
-    public Integer removeEdge(final Integer sourceVertex, final Integer targetVertex)
-    {
-        throw new UnsupportedOperationException(UNMODIFIABLE);
-    }
-
-    @Override
-    public boolean removeEdge(final Integer e)
-    {
-        throw new UnsupportedOperationException(UNMODIFIABLE);
-    }
-
-    @Override
-    public boolean removeVertex(final Integer v)
-    {
-        throw new UnsupportedOperationException(UNMODIFIABLE);
-    }
-
-    @Override
     public Set<Integer> vertexSet()
     {
         return IntSets.fromTo(0, n);
@@ -418,26 +236,6 @@ public class SuccinctIntDirectedGraph
     {
         assertEdgeExist(e);
         return (int) (successors.getLong(e) & targetMask);
-    }
-
-    @Override
-    public GraphType getType()
-    {
-        return new DefaultGraphType.Builder()
-            .directed().weighted(false).modifiable(false).allowMultipleEdges(false)
-            .allowSelfLoops(true).build();
-    }
-
-    @Override
-    public double getEdgeWeight(final Integer e)
-    {
-        return 1.0;
-    }
-
-    @Override
-    public void setEdgeWeight(final Integer e, final double weight)
-    {
-        throw new UnsupportedOperationException(UNMODIFIABLE);
     }
 
     @Override
