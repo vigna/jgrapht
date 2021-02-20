@@ -384,23 +384,22 @@ public class SuccinctDirectedGraph
             final long[] result = new long[2];
             graph.cumulativeOutdegrees.get(vertex, result);
             final LongBigListIterator iterator = graph.successors.listIterator(result[0]);
-            final int d = (int) (result[1] - result[0]);
 
             return () -> new Iterator<>() {
-                private int i = 0;
+                private int d = (int) (result[1] - result[0]);
 
                 @Override
                 public boolean hasNext()
                 {
-                    return i < d;
+                    return d != 0;
                 }
 
                 @Override
                 public IntIntPair next()
                 {
-                    if (i == d)
+                    if (d == 0)
                         throw new NoSuchElementException();
-                    i++;
+                    d--;
                     final long e = iterator.nextLong();
                     return IntIntPair.of((int) (e >>> sourceShift), (int) (e & targetMask));
                 }
