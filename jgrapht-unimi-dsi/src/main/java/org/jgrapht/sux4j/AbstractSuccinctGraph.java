@@ -33,6 +33,8 @@ import it.unimi.dsi.fastutil.objects.ObjectSets;
  * <p>
  * This class provides mutators throwing {@link UnsupportedOperationException} and operations
  * depending only on the number of vertices and edges.
+ *
+ * @param <E> the graph edge type
  */
 
 public abstract class AbstractSuccinctGraph<E>

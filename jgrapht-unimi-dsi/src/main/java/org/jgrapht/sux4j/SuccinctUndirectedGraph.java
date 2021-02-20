@@ -64,8 +64,6 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  *
  * @author Sebastiano Vigna
  * @see SuccinctIntUndirectedGraph
- *
- * @param <E> the graph edge type
  */
 
 
