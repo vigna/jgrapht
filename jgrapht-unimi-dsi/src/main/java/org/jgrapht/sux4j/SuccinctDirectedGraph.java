@@ -383,25 +383,26 @@ public class SuccinctDirectedGraph
             graph.assertVertexExist(vertex);
             final long[] result = new long[2];
             graph.cumulativeOutdegrees.get(vertex, result);
-            final var successors = graph.successors;
-            final int n = graph.n;
+            final LongBigListIterator iterator = graph.successors.listIterator(result[0]);
+            final int d = (int) (result[1] - result[0]);
 
             return () -> new Iterator<>() {
-                private long e = result[0];
+                private int i = 0;
 
                 @Override
                 public boolean hasNext()
                 {
-                    return e < result[1];
+                    return i < d;
                 }
 
                 @Override
                 public IntIntPair next()
                 {
-                    if (!hasNext())
+                    if (i == d)
                         throw new NoSuchElementException();
-                    final long t = successors.getLong(e++);
-                    return IntIntPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
+                    i++;
+                    final long e = iterator.nextLong();
+                    return IntIntPair.of((int) (e >>> sourceShift), (int) (e & targetMask));
                 }
 
             };
