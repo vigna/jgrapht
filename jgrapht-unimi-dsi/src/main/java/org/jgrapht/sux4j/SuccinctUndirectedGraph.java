@@ -38,7 +38,9 @@ import org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph;
 
 import com.google.common.collect.Iterables;
 
+import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.IntArrays;
+import it.unimi.dsi.fastutil.ints.IntIntPair;
 import it.unimi.dsi.fastutil.ints.IntIntSortedPair;
 import it.unimi.dsi.fastutil.ints.IntSets;
 import it.unimi.dsi.fastutil.longs.LongBigListIterator;
@@ -82,6 +84,7 @@ public class SuccinctUndirectedGraph
     {
         private final Graph<Integer, E> graph;
         private final long n;
+        private final int sourceShift;
         private final Function<Integer, Iterable<E>> succ;
         private final boolean sorted;
 
@@ -94,6 +97,7 @@ public class SuccinctUndirectedGraph
             final Function<Integer, Iterable<E>> succ)
         {
             this.n = (int) graph.iterables().vertexCount();
+            this.sourceShift = Fast.ceilLog2(n);
             this.graph = graph;
             this.sorted = sorted;
             this.succ = succ;
@@ -130,7 +134,7 @@ public class SuccinctUndirectedGraph
             }
             // The predecessor list will not be indexed, so we can gain a few bits of space by
             // subtracting the edge position in the list
-            next = s[i] + x * n - (sorted ? 0 : e++);
+            next = sorted ? s[i] + ((long) x << sourceShift) : s[i] + x * n - e++;
             i++;
             return true;
         }
@@ -214,6 +218,10 @@ public class SuccinctUndirectedGraph
     private final EliasFanoIndexedMonotoneLongBigList successors;
     /** The cumulative list of predecessor (edges in reversed order, including loops) lists. */
     private final EliasFanoMonotoneLongBigList predecessors;
+    /** The shift used to read sources. */
+    private final int sourceShift;
+    /** The mask used to read targets (lowest {@link #sourceShift} bits). */
+    private final long targetMask;
 
     /**
      * Creates a new immutable succinct undirected graph from a given undirected graph.
@@ -247,8 +255,12 @@ public class SuccinctUndirectedGraph
         assert cumulativeOutdegrees.getLong(cumulativeOutdegrees.size64() - 1) == m;
         assert cumulativeIndegrees.getLong(cumulativeIndegrees.size64() - 1) == m;
 
+        sourceShift = Fast.ceilLog2(n);
+        targetMask = (1L << sourceShift) - 1;
+
         successors = new EliasFanoIndexedMonotoneLongBigList(
-            m, (long) n * n, new CumulativeSuccessors<>(graph, true, iterables::outgoingEdgesOf));
+            m, (long) n << sourceShift,
+            new CumulativeSuccessors<>(graph, true, iterables::outgoingEdgesOf));
         predecessors = new EliasFanoIndexedMonotoneLongBigList(
             m, (long) n * n - m,
             new CumulativeSuccessors<>(graph, false, iterables::incomingEdgesOf));
@@ -312,7 +324,7 @@ public class SuccinctUndirectedGraph
     @Override
     public boolean containsEdge(final IntIntSortedPair e)
     {
-        return successors.indexOfUnsafe(e.firstInt() * (long) n + e.secondInt()) != -1;
+        return successors.indexOfUnsafe(((long) e.firstInt() << sourceShift) + e.secondInt()) != -1;
     }
 
     @Override
@@ -344,7 +356,7 @@ public class SuccinctUndirectedGraph
 
         for (int e = (int) result[0]; e < (int) result[1]; e++) {
             final long t = successors.getLong(e);
-            s.add(IntIntSortedPair.of((int) (t / n), (int) (t % n)));
+            s.add(IntIntSortedPair.of((int) (t >>> sourceShift), (int) (t & targetMask)));
         }
 
         for (final IntIntSortedPair e : ITERABLES.reverseSortedEdgesOfNoLoops(vertex))
@@ -413,6 +425,37 @@ public class SuccinctUndirectedGraph
         return e.secondInt();
     }
 
+    /**
+     * Returns the index associated with the given edge.
+     *
+     * @param e an edge of the graph.
+     * @return the index associated with the edge, or &minus;1 if the edge is not part of the graph.
+     * @see #getEdgeFromIndex(int)
+     */
+    public int getIndexFromEdge(final IntIntSortedPair e)
+    {
+        final int source = e.firstInt();
+        final int target = e.secondInt();
+        if (source < 0 || source >= n || target < 0 || target >= n)
+            throw new IllegalArgumentException();
+        return (int) successors.indexOfUnsafe(((long) source << sourceShift) + target);
+    }
+
+    /**
+     * Returns the edge with given index.
+     *
+     * @param i an index between 0 (included) and the number of edges (excluded).
+     * @return the pair with index {@code i}.
+     * @see #getIndexFromEdge(IntIntPair)
+     */
+    public IntIntSortedPair getEdgeFromIndex(final int i)
+    {
+        if (i < 0 || i >= m)
+            throw new IllegalArgumentException();
+        final long t = successors.getLong(i);
+        return IntIntSortedPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
+    }
+
     @Override
     public GraphType getType()
     {
@@ -443,7 +486,7 @@ public class SuccinctUndirectedGraph
             x = y;
             y = t;
         }
-        final long index = successors.indexOfUnsafe(x * (long) n + y);
+        final long index = successors.indexOfUnsafe(((long) x << sourceShift) + y);
         return index != -1 ? IntIntSortedPair.of(x, y) : null;
     }
 
@@ -457,7 +500,7 @@ public class SuccinctUndirectedGraph
             x = y;
             y = t;
         }
-        return successors.indexOfUnsafe(x * (long) n + y) != -1;
+        return successors.indexOfUnsafe(((long) x << sourceShift) + y) != -1;
     }
 
     @Override
@@ -536,6 +579,9 @@ public class SuccinctUndirectedGraph
         @Override
         public Iterable<IntIntSortedPair> edges()
         {
+            final int sourceShift = graph.sourceShift;
+            final long targetMask = graph.targetMask;
+
             return () -> new Iterator<>()
             {
                 private final EliasFanoIndexedMonotoneLongBigListIterator iterator =
@@ -552,7 +598,7 @@ public class SuccinctUndirectedGraph
                 public IntIntSortedPair next()
                 {
                     final long t = iterator.nextLong();
-                    return IntIntSortedPair.of((int) (t / n), (int) (t % n));
+                    return IntIntSortedPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
                 }
 
             };
@@ -566,11 +612,14 @@ public class SuccinctUndirectedGraph
 
         private Iterable<IntIntSortedPair> sortedEdges(final int source)
         {
+            final int sourceShift = graph.sourceShift;
+            final long targetMask = graph.targetMask;
             final long[] result = new long[2];
             graph.cumulativeOutdegrees.get(source, result);
             final var successors = graph.successors;
             final int n = graph.n;
-            final Iterable<IntIntSortedPair> sortedEdgesIterable = () -> new Iterator<>()
+
+            return () -> new Iterator<>()
             {
                 private int e = (int) result[0];
 
@@ -584,10 +633,9 @@ public class SuccinctUndirectedGraph
                 public IntIntSortedPair next()
                 {
                     final long t = successors.getLong(e++);
-                    return IntIntSortedPair.of((int) (t / n), (int) (t % n));
+                    return IntIntSortedPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
                 }
             };
-            return sortedEdgesIterable;
         }
 
         private Iterable<IntIntSortedPair> reverseSortedEdgesOfNoLoops(final int target)

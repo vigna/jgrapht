@@ -205,6 +205,7 @@ public class SuccinctIntDirectedGraph
     private final int sourceShift;
     /** The mask used to read targets (lowest {@link #sourceShift} bits). */
     private final long targetMask;
+
     /**
      * Creates a new immutable succinct directed graph from a given directed graph.
      *

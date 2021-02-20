@@ -38,6 +38,7 @@ import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
 import com.google.common.collect.Iterables;
 
+import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import it.unimi.dsi.fastutil.ints.IntSets;
@@ -99,6 +100,7 @@ public class SuccinctDirectedGraph
     {
         private final Graph<Integer, E> graph;
         private final long n;
+        private final int sourceShift;
         private final Function<Integer, Iterable<E>> succ;
         private final boolean strict;
 
@@ -111,6 +113,7 @@ public class SuccinctDirectedGraph
             final boolean strict)
         {
             this.n = graph.iterables().vertexCount();
+            this.sourceShift = Fast.ceilLog2(n);
             this.graph = graph;
             this.succ = succ;
             this.strict = strict;
@@ -137,7 +140,7 @@ public class SuccinctDirectedGraph
             }
             // The predecessor list will not be indexed, so we can gain a few bits of space by
             // subtracting the edge position in the list
-            next = s[i] + x * n - (strict ? 0 : e++);
+            next = strict ? s[i] + ((long) x << sourceShift) : s[i] + x * n - e++;
             i++;
             return true;
         }
@@ -200,6 +203,10 @@ public class SuccinctDirectedGraph
     private final EliasFanoIndexedMonotoneLongBigList successors;
     /** The cumulative list of predecessor lists. */
     private final EliasFanoMonotoneLongBigList predecessors;
+    /** The shift used to read sources. */
+    private final int sourceShift;
+    /** The mask used to read targets (lowest {@link #sourceShift} bits). */
+    private final long targetMask;
 
     /**
      * Creates a new immutable succinct directed graph from a given directed graph.
@@ -234,8 +241,12 @@ public class SuccinctDirectedGraph
         assert cumulativeOutdegrees.getLong(cumulativeOutdegrees.size64() - 1) == m;
         assert cumulativeIndegrees.getLong(cumulativeIndegrees.size64() - 1) == m;
 
+        sourceShift = Fast.ceilLog2(n);
+        targetMask = (1L << sourceShift) - 1;
+
         successors = new EliasFanoIndexedMonotoneLongBigList(
-            m, (long) n * n, new CumulativeSuccessors<>(graph, iterables::outgoingEdgesOf, true));
+            m, (long) n << sourceShift,
+            new CumulativeSuccessors<>(graph, iterables::outgoingEdgesOf, true));
         predecessors = new EliasFanoIndexedMonotoneLongBigList(
             m, (long) n * n - m,
             new CumulativeSuccessors<>(graph, iterables::incomingEdgesOf, false));
@@ -298,7 +309,7 @@ public class SuccinctDirectedGraph
     @Override
     public boolean containsEdge(final IntIntPair e)
     {
-        return successors.indexOfUnsafe(e.firstInt() * (long) n + e.secondInt()) != -1;
+        return successors.indexOfUnsafe(((long) e.firstInt() << sourceShift) + e.secondInt()) != -1;
     }
 
     @Override
@@ -349,7 +360,7 @@ public class SuccinctDirectedGraph
 
         for (int i = d; i-- != 0;) {
             final long source = iterator.nextLong() - base--;
-            s.add(IntIntPair.of((int) source, target));
+            s.add(IntIntPair.of((int) source, t));
         }
 
         return s;
@@ -371,7 +382,7 @@ public class SuccinctDirectedGraph
         final ObjectOpenHashSet<IntIntPair> s = new ObjectOpenHashSet<>();
         for (int e = (int) result[0]; e < (int) result[1]; e++) {
             final long t = successors.getLong(e);
-            s.add(IntIntPair.of((int) (t / n), (int) (t % n)));
+            s.add(IntIntPair.of((int) (t >>> sourceShift), (int) (t & targetMask)));
         }
         return s;
     }
@@ -412,6 +423,37 @@ public class SuccinctDirectedGraph
         return e.secondInt();
     }
 
+    /**
+     * Returns the index associated with the given edge.
+     *
+     * @param e an edge of the graph.
+     * @return the index associated with the edge, or &minus;1 if the edge is not part of the graph.
+     * @see #getEdgeFromIndex(int)
+     */
+    public int getIndexFromEdge(final IntIntPair e)
+    {
+        final int source = e.firstInt();
+        final int target = e.secondInt();
+        if (source < 0 || source >= n || target < 0 || target >= n)
+            throw new IllegalArgumentException();
+        return (int) successors.indexOfUnsafe(((long) source << sourceShift) + target);
+    }
+
+    /**
+     * Returns the edge with given index.
+     *
+     * @param i an index between 0 (included) and the number of edges (excluded).
+     * @return the pair with index {@code i}.
+     * @see #getIndexFromEdge(IntIntPair)
+     */
+    public IntIntPair getEdgeFromIndex(final int i)
+    {
+        if (i < 0 || i >= m)
+            throw new IllegalArgumentException();
+        final long t = successors.getLong(i);
+        return IntIntPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
+    }
+
     @Override
     public GraphType getType()
     {
@@ -435,14 +477,15 @@ public class SuccinctDirectedGraph
     @Override
     public IntIntPair getEdge(final Integer sourceVertex, final Integer targetVertex)
     {
-        final long index = successors.indexOfUnsafe(sourceVertex * (long) n + targetVertex);
+        final long index =
+            successors.indexOfUnsafe(((long) sourceVertex << sourceShift) + targetVertex);
         return index != -1 ? IntIntPair.of(sourceVertex, targetVertex) : null;
     }
 
     @Override
     public boolean containsEdge(final Integer sourceVertex, final Integer targetVertex)
     {
-        return successors.indexOfUnsafe(sourceVertex * (long) n + targetVertex) != -1;
+        return successors.indexOfUnsafe(((long) sourceVertex << sourceShift) + targetVertex) != -1;
     }
 
     @Override
@@ -521,6 +564,9 @@ public class SuccinctDirectedGraph
         @Override
         public Iterable<IntIntPair> edges()
         {
+            final int sourceShift = graph.sourceShift;
+            final long targetMask = graph.targetMask;
+
             return () -> new Iterator<>()
             {
                 private final EliasFanoIndexedMonotoneLongBigListIterator iterator = graph.successors.iterator();
@@ -536,7 +582,7 @@ public class SuccinctDirectedGraph
                 public IntIntPair next()
                 {
                     final long t = iterator.nextLong();
-                    return IntIntPair.of((int) (t / n), (int) (t % n));
+                    return IntIntPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
                 }
 
             };
@@ -592,6 +638,9 @@ public class SuccinctDirectedGraph
         @Override
         public Iterable<IntIntPair> outgoingEdgesOf(final Integer vertex)
         {
+            final int sourceShift = graph.sourceShift;
+            final long targetMask = graph.targetMask;
+
             graph.assertVertexExist(vertex);
             final long[] result = new long[2];
             graph.cumulativeOutdegrees.get(vertex, result);
@@ -613,7 +662,7 @@ public class SuccinctDirectedGraph
                     if (!hasNext())
                         throw new NoSuchElementException();
                     final long t = successors.getLong(e++);
-                    return IntIntPair.of((int) (t / n), (int) (t % n));
+                    return IntIntPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
                 }
 
             };

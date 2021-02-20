@@ -185,6 +185,9 @@ public class SuccinctUndirectedGraphTest
             iterator.next();
         assertFalse(iterator.hasNext());
         assertFalse(iterator.hasNext());
+
+        for (int i = 0; i < s.iterables().edgeCount(); i++)
+            assertEquals(i, s.getIndexFromEdge(s.getEdgeFromIndex(i)));
     }
 
     @Test
@@ -240,6 +243,8 @@ public class SuccinctUndirectedGraphTest
             final int y = random.nextInt(n);
             assertEquals(s.containsEdge(x, y), t.containsEdge(x, y));
         }
+        for (int i = 0; i < t.iterables().edgeCount(); i++)
+            assertEquals(i, t.getIndexFromEdge(t.getEdgeFromIndex(i)));
     }
 
     @Test
@@ -272,5 +277,7 @@ public class SuccinctUndirectedGraphTest
             final int y = random.nextInt(n);
             assertEquals(s.containsEdge(x, y), t.containsEdge(x, y));
         }
+        for (int i = 0; i < t.iterables().edgeCount(); i++)
+            assertEquals(i, t.getIndexFromEdge(t.getEdgeFromIndex(i)));
     }
 }
