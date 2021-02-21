@@ -164,17 +164,17 @@ public class SuccinctUndirectedGraph
     public Set<IntIntSortedPair> edgesOf(final Integer vertex)
     {
         assertVertexExist(vertex);
+        final int x = vertex;
         final long[] result = new long[2];
-        cumulativeOutdegrees.get(vertex, result);
+        cumulativeOutdegrees.get(x, result);
         final Set<IntIntSortedPair> s = new ObjectOpenHashSet<>();
         final LongBigListIterator iterator = successors.listIterator(result[0]);
+        final long base = (long) x << sourceShift;
 
-        for (int d = (int) (result[1] - result[0]); d-- != 0;) {
-            final long t = iterator.nextLong();
-            s.add(IntIntSortedPair.of((int) (t >>> sourceShift), (int) (t & targetMask)));
-        }
+        for (int d = (int) (result[1] - result[0]); d-- != 0;)
+            s.add(IntIntSortedPair.of(x, (int) (iterator.nextLong() - base)));
 
-        for (final IntIntSortedPair e : ITERABLES.reverseSortedEdgesOfNoLoops(vertex))
+        for (final IntIntSortedPair e : ITERABLES.reverseSortedEdgesOfNoLoops(x))
             s.add(e);
 
         return s;
@@ -332,6 +332,7 @@ public class SuccinctUndirectedGraph
             final long[] result = new long[2];
             graph.cumulativeOutdegrees.get(source, result);
             final var iterator = graph.successors.listIterator(result[0]);
+            final long base = (long) source << sourceShift;
 
             return () -> new Iterator<>()
             {
@@ -349,8 +350,7 @@ public class SuccinctUndirectedGraph
                     if (d == 0)
                         throw new NoSuchElementException();
                     d--;
-                    final long t = iterator.nextLong();
-                    return IntIntSortedPair.of((int) (t >>> sourceShift), (int) (t & targetMask));
+                    return IntIntSortedPair.of(source, (int) (iterator.nextLong() - base));
                 }
             };
         }

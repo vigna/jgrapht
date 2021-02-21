@@ -38,6 +38,32 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
  * Two subclasses, {@link CumulativeSuccessors} and {@link CumulativeDegrees}, generate the monotone
  * lists that will be encoded using the Elias&ndash;Fano representation.
  *
+ * <p>
+ * First, we store the monotone lists of cumulative outdegrees and indegrees.
+ *
+ * <p>
+ * Then, we store the outgoing edges <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> as a monotone
+ * sequence using the encoding <var>x</var>2<sup>&lceil;log&nbsp;<var>n</var>&rceil;</sup> +
+ * <var>y</var>. At that point the <var>k</var>-th edge can be obtained by retrieving the
+ * <var>k</var>-th element of the sequence and some bit shifting (the encoding
+ * <var>x</var><var>n</var> + <var>y</var> would be slightly more compact, but much slower to
+ * decode). Since we know the list of cumulative outdegrees, we know which range of indices
+ * corresponds to the edges outgoing from each vertex. If we need to now whether
+ * <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> is an edge we just look for
+ * <var>x</var>2<sup>&lceil;log&nbsp;<var>n</var>&rceil;</sup> + <var>y</var> in the sequence.
+ *
+ * <p>
+ * Finally, we store incoming edges <var>y</var>&nbsp;&rarr;&nbsp;<var>x</var> again as a monotone
+ * sequence using the encoding <var>x</var><var>n</var> + <var>y</var> - <var>e</var>, where
+ * <var>e</var> is the index of the edge in lexicographical order. In this case we just need to be
+ * able to recover the edges associated with a vertex, so we can use a more compact format.
+ *
+ * <p>
+ * However, in the case of a {@link SuccinctIntDirectedGraph} after retrieving the source and target
+ * of an incoming edge we need to index it. The slow indexing of the incoming edges is the reason
+ * why a {@link SuccinctIntDirectedGraph} enumerates incoming edges very slowly, whereas a
+ * {@link SuccinctDirectedGraph} does not.
+ *
  * @param <E> the graph edge type
  */
 
@@ -45,6 +71,7 @@ public abstract class AbstractSuccinctDirectedGraph<E>
     extends
     AbstractSuccinctGraph<E>
 {
+    private static final long serialVersionUID = 0L;
 
     public AbstractSuccinctDirectedGraph(final int n, final int m)
     {

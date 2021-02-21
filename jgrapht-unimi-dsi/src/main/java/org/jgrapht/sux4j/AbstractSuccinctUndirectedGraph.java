@@ -39,6 +39,23 @@ import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList;
  * Two subclasses, {@link CumulativeSuccessors} and {@link CumulativeDegrees}, generate the monotone
  * lists that will be encoded using the Elias&ndash;Fano representation.
  *
+ * <p>
+ * We use the representation described in {@link AbstractSuccinctDirectedGraph} applied to the
+ * directed graph obtained by choosing the direction <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> for
+ * an edge <var>x</var>&nbsp;&mdash;&nbsp;<var>y</var> if <var>x</var>&nbsp;&le;&nbsp;<var>y</var>
+ * (loops are represented twice). Each edge now appears exactly once in the list of outgoing edges,
+ * and thus can be indexed as in the directed base.
+ *
+ * <p>
+ * The set of vertices adjacent to a given vertex can then be retrieved by enumerating both outgoing
+ * and incoming edges, being careful to avoid enumerating twice loops.
+ *
+ * <p>
+ * However, in the case of a {@link SuccinctIntUndirectedGraph} after retrieving the source and
+ * target of an incoming edge we need to index it. The slow indexing of the incoming edges is the
+ * reason why a {@link SuccinctIntUndirectedGraph} enumerates edges very slowly, whereas a
+ * {@link SuccinctUndirectedGraph} does not.
+ *
  * @param <E> the graph edge type
  */
 
@@ -139,7 +156,7 @@ public abstract class AbstractSuccinctUndirectedGraph<E>
     /**
      * Iterates over the cumulative degrees (starts with a zero). Depending on the value of
      * {@code sorted}, only edges whose adjacent vertex is greater than or equal to the base vertex
-     * (or vice versa) are included, depending on the value of the {@code sorted} parameter.
+     * (or vice versa) are included.
      *
      * @param <E> the graph edge type
      */

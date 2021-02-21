@@ -54,7 +54,7 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  *
  * <p>
  * All accessors are very fast. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
- * happen in almost constant time.
+ * very fast and happen in almost constant time.
  *
  * <p>
  * {@link SuccinctDirectedGraph} is a much slower implementation with a similar footprint using
@@ -197,15 +197,15 @@ public class SuccinctDirectedGraph
     public Set<IntIntPair> outgoingEdgesOf(final Integer vertex)
     {
         assertVertexExist(vertex);
+        final int x = vertex;
         final long[] result = new long[2];
-        cumulativeOutdegrees.get(vertex, result);
+        cumulativeOutdegrees.get(x, result);
         final ObjectOpenHashSet<IntIntPair> s = new ObjectOpenHashSet<>();
         final LongBigListIterator iterator = successors.listIterator(result[0]);
+        final long base = (long) x << sourceShift;
 
-        for (int d = (int) (result[1] - result[0]); d-- != 0;) {
-            final long t = iterator.nextLong();
-            s.add(IntIntPair.of((int) (t >>> sourceShift), (int) (t & targetMask)));
-        }
+        for (int d = (int) (result[1] - result[0]); d-- != 0;)
+            s.add(IntIntPair.of(x, (int) (iterator.nextLong() - base)));
         return s;
     }
 
@@ -383,9 +383,11 @@ public class SuccinctDirectedGraph
             final long targetMask = graph.targetMask;
 
             graph.assertVertexExist(vertex);
+            final int x = vertex;
             final long[] result = new long[2];
-            graph.cumulativeOutdegrees.get(vertex, result);
+            graph.cumulativeOutdegrees.get(x, result);
             final LongBigListIterator iterator = graph.successors.listIterator(result[0]);
+            final long base = (long) x << sourceShift;
 
             return () -> new Iterator<>() {
                 private int d = (int) (result[1] - result[0]);
@@ -402,8 +404,7 @@ public class SuccinctDirectedGraph
                     if (d == 0)
                         throw new NoSuchElementException();
                     d--;
-                    final long e = iterator.nextLong();
-                    return IntIntPair.of((int) (e >>> sourceShift), (int) (e & targetMask));
+                    return IntIntPair.of(x, (int) (iterator.nextLong() - base));
                 }
 
             };
