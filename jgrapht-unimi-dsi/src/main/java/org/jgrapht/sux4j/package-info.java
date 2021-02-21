@@ -5,17 +5,15 @@
  * <p>
  * This package contains implementations of immutable graphs based on the
  * {@linkplain it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList Elias&ndash;Fano
- * quasi-succinct representation of monotone sequences}. The entries of the adjacency matrix of a
- * graph with <var>n</var> vertices are represented as a monotone sequence of natural numbers, where
- * an arc <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> is represented by
- * <var>x</var><var>n</var>&nbsp;+&nbsp;<var>y</var>.
+ * quasi-succinct representation of monotone sequences}. The positions of the nonzero entries of the
+ * adjacency matrix of a graph are represented as a monotone sequence of natural numbers.
  *
  * <p>
  * The memory footprint of these implementation is close to the information-theoretical lower bound;
  * the actual space used can be easily measured as all implementations are serializable, and their
  * in-memory footprint is very closed to the on-disk footprint. Usually the size is a few times
  * smaller than that of a {@link org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph
- * SparseIntDirectedGraph}/ {@link org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph
+ * SparseIntDirectedGraph}/{@link org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph
  * SparseIntUndirectedGraph}.
  *
  * <p>
@@ -31,7 +29,7 @@
  * incoming edges} is very slow. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
  * very fast and happen in almost constant time.
  * <li>{@link org.jgrapht.sux4j.SuccinctIntUndirectedGraph} is an implementation for undirected
- * graphs. {@linkplain org.jgrapht.GraphIterables#edgesOf(Object) Enumeration of edges} is quite
+ * graphs. {@linkplain org.jgrapht.GraphIterables#edgesOf(Object) Enumeration of edges} is very
  * slow. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are very fast and happen in
  * almost constant time.
  * </ul>
@@ -64,7 +62,7 @@
  * using <a href="http://webgraph.di.unimi.it/">WebGraph</a>'s {@link it.unimi.dsi.webgraph.EFGraph
  * EFGraph} format and then accessing the graph using the suitable {@linkplain org.jgrapht.webgraph
  * adapter}; in particular, one can represent graphs with more than {@link Integer#MAX_VALUE}
- * vertices. However, the adapters to not provide methods mapping bijectively edges into a
+ * vertices. However, the adapters do not provide methods mapping bijectively edges into a
  * contiguous set of integers.
  */
 package org.jgrapht.sux4j;
