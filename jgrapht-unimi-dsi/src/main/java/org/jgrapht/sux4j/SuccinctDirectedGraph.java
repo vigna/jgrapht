@@ -39,7 +39,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList.EliasFanoInde
 import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
 
 /**
- * An immutable directed graph represented using quasi-succinct data structures.
+ * An immutable directed graph with {@link IntIntPair} edges represented using quasi-succinct data
+ * structures.
  *
  * <p>
  * The graph representation of this implementation uses the {@linkplain EliasFanoMonotoneLongBigList

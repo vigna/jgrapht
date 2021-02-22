@@ -39,7 +39,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList.EliasFanoInde
 import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
 
 /**
- * An immutable undirected graph represented using quasi-succinct data structures.
+ * An immutable undirected graph with {@link IntIntSortedPair} edges represented using
+ * quasi-succinct data structures.
  *
  * <p>
  * The graph representation of this implementation uses the {@linkplain EliasFanoMonotoneLongBigList
