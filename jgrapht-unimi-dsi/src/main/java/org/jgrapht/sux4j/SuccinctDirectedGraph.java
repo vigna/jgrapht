@@ -126,11 +126,11 @@ public class SuccinctDirectedGraph
      *
      * <p>
      * This constructor just builds a {@link SparseIntDirectedGraph} and delegates to the
-     * {@linkplain #SuccinctIntDirectedGraph(Graph) main constructor}.
+     * {@linkplain #SuccinctDirectedGraph(Graph) main constructor}.
      *
      * @param numVertices the number of vertices.
      * @param edges the edge list.
-     * @see #SuccinctIntDirectedGraph(Graph)
+     * @see #SuccinctDirectedGraph(Graph)
      */
 
     public SuccinctDirectedGraph(final int numVertices, final List<Pair<Integer, Integer>> edges)

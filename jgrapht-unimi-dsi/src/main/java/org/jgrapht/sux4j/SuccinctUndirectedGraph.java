@@ -31,7 +31,6 @@ import org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph;
 
 import com.google.common.collect.Iterables;
 
-import it.unimi.dsi.fastutil.ints.IntIntPair;
 import it.unimi.dsi.fastutil.ints.IntIntSortedPair;
 import it.unimi.dsi.fastutil.longs.LongBigListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -128,11 +127,11 @@ public class SuccinctUndirectedGraph
      *
      * <p>
      * This constructor just builds a {@link SparseIntUndirectedGraph} and delegates to the
-     * {@linkplain #SuccinctIntUndirectedGraph(Graph) main constructor}.
+     * {@linkplain #SuccinctUndirectedGraph(Graph) main constructor}.
      *
      * @param numVertices the number of vertices.
      * @param edges the edge list.
-     * @see #SuccinctIntUndirectedGraph(Graph)
+     * @see #SuccinctUndirectedGraph(Graph)
      */
 
     public SuccinctUndirectedGraph(
@@ -225,7 +224,7 @@ public class SuccinctUndirectedGraph
      *
      * @param i an index between 0 (included) and the number of edges (excluded).
      * @return the pair with index {@code i}.
-     * @see #getIndexFromEdge(IntIntPair)
+     * @see #getIndexFromEdge(IntIntSortedPair)
      */
     public IntIntSortedPair getEdgeFromIndex(final int i)
     {

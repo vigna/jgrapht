@@ -36,9 +36,10 @@
  *
  * <p>
  * The sometimes slow behavior of the previous classes is due to a clash between JGraphT's design
- * and the need of representing an edge with an {@link java.lang.Integer Integer}: there is no
- * information that can be carried by the object representing the edge. This limitation forces the
- * two classes above to compute two expensive functions that are one the inverse of the other.
+ * and the need of representing an edge with an {@link java.lang.Integer Integer}, which cannot be
+ * extended: there is no information that can be carried by the object representing the edge. This
+ * limitation forces the two classes above to compute two expensive functions that are one the
+ * inverse of the other.
  *
  * <p>
  * As an alternative, we provide classes {@link org.jgrapht.sux4j.SuccinctDirectedGraph
@@ -64,5 +65,28 @@
  * adapter}; in particular, one can represent graphs with more than {@link Integer#MAX_VALUE}
  * vertices. However, the adapters do not provide methods mapping bijectively edges into a
  * contiguous set of integers.
+ *
+ * <h2>Building and serializing with limited memory</h2>
+ *
+ * <p>
+ * All implementations provide a copy constructor taking a {@link org.jgrapht.Graph Graph} and a
+ * constructor accepting a list of edges; the latter just builds a sparse graph and delegates to the
+ * copy constructor. Both methods can be inconvenient if the graph to be represented is large, as
+ * the list of edges might have too large a footprint.
+ *
+ * <p>
+ * There is however a simple strategy that makes it possible to build succinct representations using
+ * a relatively small amount of additional memory with respect to the representation itself:
+ * <ol>
+ * <li>{@linkplain it.unimi.dsi.webgraph convert your graph to a WebGraph format} such as
+ * {@link it.unimi.dsi.big.webgraph.BVGraph BVGraph} or {@link it.unimi.dsi.webgraph.EFGraph
+ * EFGraph};
+ * <li>if your graph is directed, use {@link it.unimi.dsi.webgraph.Transform Transform} to store the
+ * transpose of your graph in the same way;
+ * <li>use a {@linkplain org.jgrapht.webgraph suitable adapter} to get a {@link org.jgrapht.Graph
+ * Graph} representing your graph, taking care of loading the WebGraph representations using
+ * {@link it.unimi.dsi.webgraph.ImmutableGraph#loadMapped() ImmutableGraph.loadMapped()};
+ * <li>use the copy constructor to obtain a quasi-succinct representation.
+ * </ol>
  */
 package org.jgrapht.sux4j;
