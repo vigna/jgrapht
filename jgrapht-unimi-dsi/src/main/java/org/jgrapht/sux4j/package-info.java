@@ -26,12 +26,12 @@
  * <li>{@link org.jgrapht.sux4j.SuccinctIntDirectedGraph} is an implementation for directed graphs.
  * {@linkplain org.jgrapht.GraphIterables#outgoingEdgesOf(Object) Enumeration of outgoing edges} is
  * quite fast, but {@linkplain org.jgrapht.GraphIterables#incomingEdgesOf(Object) enumeration of
- * incoming edges} is very slow. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
- * very fast and happen in almost constant time.
+ * incoming edges} is very slow. {@linkplain org.jgrapht.Graph#containsEdge(Object) Adjacency tests}
+ * are very fast and happen in almost constant time.
  * <li>{@link org.jgrapht.sux4j.SuccinctIntUndirectedGraph} is an implementation for undirected
  * graphs. {@linkplain org.jgrapht.GraphIterables#edgesOf(Object) Enumeration of edges} is very
- * slow. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are very fast and happen in
- * almost constant time.
+ * slow. {@linkplain org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are very fast and
+ * happen in almost constant time.
  * </ul>
  *
  * <p>

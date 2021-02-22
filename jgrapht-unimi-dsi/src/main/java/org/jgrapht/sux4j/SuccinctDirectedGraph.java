@@ -53,8 +53,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * {@link SparseIntDirectedGraph}).
  *
  * <p>
- * All accessors are very fast. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
- * very fast and happen in almost constant time.
+ * All accessors are very fast. {@linkplain org.jgrapht.Graph#containsEdge(Object) Adjacency tests}
+ * are very fast and happen in almost constant time.
  *
  * <p>
  * {@link SuccinctDirectedGraph} is a much slower implementation with a similar footprint using
