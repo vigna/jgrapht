@@ -20,7 +20,8 @@
  * We provide two classes mimicking {@link org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph
  * SparseIntDirectedGraph} and {@link org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph
  * SparseIntUndirectedGraph}, in the sense that both vertices and edges are integers (and they are
- * numbered contiguously).
+ * numbered contiguously). Thus, by definition these classes cannot represent graphs with more than
+ * {@link Integer#MAX_VALUE} edges.
  *
  * <ul>
  * <li>{@link org.jgrapht.sux4j.SuccinctIntDirectedGraph} is an implementation for directed graphs.
@@ -48,15 +49,16 @@
  * integers stored in an {@link it.unimi.dsi.fastutil.ints.IntIntPair IntIntPair} (for directed
  * graphs) or an {@link it.unimi.dsi.fastutil.ints.IntIntSortedPair IntIntSortedPair} (for
  * undirected graphs). Storing the edges explicitly avoids the cumbersome back-and-forth
- * computations of the previous classes. All accessors are extremely fast.
+ * computations of the previous classes. All accessors are extremely fast. There is no limitation on
+ * the number of edges.
  *
  * <p>
  * Both classes provide methods {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getEdgeFromIndex(int)
  * getEdgeFromIndex()} and
  * {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getIndexFromEdge(it.unimi.dsi.fastutil.ints.IntIntPair)
- * getIndexFromEdge()} that map bijectively the edge set into a contiguous set of integers. In this
- * way the user can choose when and how to use the feature (e.g., to store compactly data associated
- * to edges).
+ * getIndexFromEdge()} that map bijectively the edge set into a contiguous set of longs. In this way
+ * the user can choose when and how to use the feature (e.g., to store compactly data associated to
+ * edges).
  *
  * <p>
  * Finally, note that the best performance and compression can be obtained by representing the graph
