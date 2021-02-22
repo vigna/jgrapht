@@ -39,7 +39,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList.EliasFanoInde
 import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
 
 /**
- * An immutable directed graph represented using quasi-succinct data structures.
+ * An immutable directed graph with {@link IntIntPair} edges represented using quasi-succinct data
+ * structures.
  *
  * <p>
  * The graph representation of this implementation uses the {@linkplain EliasFanoMonotoneLongBigList
@@ -53,13 +54,20 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * {@link SparseIntDirectedGraph}).
  *
  * <p>
- * All accessors are very fast. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
- * very fast and happen in almost constant time.
+ * All accessors are very fast. {@linkplain org.jgrapht.Graph#containsEdge(Object) Adjacency tests}
+ * are very fast and happen in almost constant time.
  *
  * <p>
  * {@link SuccinctDirectedGraph} is a much slower implementation with a similar footprint using
  * {@link Integer} as edge type. Please read the {@linkplain org.jgrapht.sux4j class documentation}
  * for more information.
+ *
+ * <p>
+ * For convenience, and as a compromise with the approach of {@link SuccinctIntDirectedGraph}, this
+ * class provides methods {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getEdgeFromIndex(long)
+ * getEdgeFromIndex()} and
+ * {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getIndexFromEdge(it.unimi.dsi.fastutil.ints.IntIntPair)
+ * getIndexFromEdge()} that map bijectively the edge set into a contiguous set of longs.
  *
  * @author Sebastiano Vigna
  * @see SuccinctIntDirectedGraph
@@ -126,11 +134,11 @@ public class SuccinctDirectedGraph
      *
      * <p>
      * This constructor just builds a {@link SparseIntDirectedGraph} and delegates to the
-     * {@linkplain #SuccinctIntDirectedGraph(Graph) main constructor}.
+     * {@linkplain #SuccinctDirectedGraph(Graph) main constructor}.
      *
      * @param numVertices the number of vertices.
      * @param edges the edge list.
-     * @see #SuccinctIntDirectedGraph(Graph)
+     * @see #SuccinctDirectedGraph(Graph)
      */
 
     public SuccinctDirectedGraph(final int numVertices, final List<Pair<Integer, Integer>> edges)
@@ -226,15 +234,15 @@ public class SuccinctDirectedGraph
      *
      * @param e an edge of the graph.
      * @return the index associated with the edge, or &minus;1 if the edge is not part of the graph.
-     * @see #getEdgeFromIndex(int)
+     * @see #getEdgeFromIndex(long)
      */
-    public int getIndexFromEdge(final IntIntPair e)
+    public long getIndexFromEdge(final IntIntPair e)
     {
         final int source = e.firstInt();
         final int target = e.secondInt();
         if (source < 0 || source >= n || target < 0 || target >= n)
             throw new IllegalArgumentException();
-        return (int) successors.indexOfUnsafe(((long) source << sourceShift) + target);
+        return successors.indexOfUnsafe(((long) source << sourceShift) + target);
     }
 
     /**
@@ -244,7 +252,7 @@ public class SuccinctDirectedGraph
      * @return the pair with index {@code i}.
      * @see #getIndexFromEdge(IntIntPair)
      */
-    public IntIntPair getEdgeFromIndex(final int i)
+    public IntIntPair getEdgeFromIndex(final long i)
     {
         if (i < 0 || i >= m)
             throw new IllegalArgumentException();

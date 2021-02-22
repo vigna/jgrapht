@@ -63,6 +63,7 @@ public abstract class AbstractSuccinctUndirectedGraph<E>
     extends
     AbstractSuccinctGraph<E>
 {
+    private static final long serialVersionUID = 0L;
 
     public AbstractSuccinctUndirectedGraph(final int n, final int m)
     {
@@ -95,7 +96,7 @@ public abstract class AbstractSuccinctUndirectedGraph<E>
         private long next = -1;
         private int[] s = IntArrays.EMPTY_ARRAY;
 
-        public CumulativeSuccessors(
+        protected CumulativeSuccessors(
             final Graph<Integer, E> graph, final boolean sorted,
             final Function<Integer, Iterable<E>> succ)
         {
@@ -171,7 +172,7 @@ public abstract class AbstractSuccinctUndirectedGraph<E>
         private final boolean sorted;
         private final Graph<Integer, E> graph;
 
-        public CumulativeDegrees(
+        protected CumulativeDegrees(
             final Graph<Integer, E> graph, final boolean sorted,
             final Function<Integer, Iterable<E>> succ)
         {

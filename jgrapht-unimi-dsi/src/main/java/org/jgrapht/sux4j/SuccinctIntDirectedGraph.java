@@ -40,7 +40,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList;
 import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
 
 /**
- * An immutable directed graph represented using quasi-succinct data structures.
+ * An immutable directed graph with {@link Integer} edges represented using quasi-succinct data
+ * structures.
  *
  * <p>
  * The graph representation of this implementation is similar to that of
@@ -57,8 +58,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * <p>
  * {@linkplain org.jgrapht.GraphIterables#outgoingEdgesOf(Object) Enumeration of outgoing edges} is
  * quite fast, but {@linkplain org.jgrapht.GraphIterables#incomingEdgesOf(Object) enumeration of
- * incoming edges} is very slow. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
- * very fast and happen in almost constant time.
+ * incoming edges} is very slow. {@linkplain org.jgrapht.Graph#containsEdge(Object) Adjacency tests}
+ * are very fast and happen in almost constant time.
  *
  * <p>
  * {@link SuccinctDirectedGraph} is a much faster implementation with a similar footprint using

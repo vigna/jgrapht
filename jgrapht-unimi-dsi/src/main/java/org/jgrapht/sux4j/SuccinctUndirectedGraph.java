@@ -31,7 +31,6 @@ import org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph;
 
 import com.google.common.collect.Iterables;
 
-import it.unimi.dsi.fastutil.ints.IntIntPair;
 import it.unimi.dsi.fastutil.ints.IntIntSortedPair;
 import it.unimi.dsi.fastutil.longs.LongBigListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -40,7 +39,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoIndexedMonotoneLongBigList.EliasFanoInde
 import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
 
 /**
- * An immutable undirected graph represented using quasi-succinct data structures.
+ * An immutable undirected graph with {@link IntIntSortedPair} edges represented using
+ * quasi-succinct data structures.
  *
  * <p>
  * The graph representation of this implementation uses the {@linkplain EliasFanoMonotoneLongBigList
@@ -54,13 +54,20 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * {@link SparseIntUndirectedGraph}).
  *
  * <p>
- * All accessors are very fast. {@link org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are
- * happen in almost constant time.
+ * All accessors are very fast. {@linkplain org.jgrapht.Graph#containsEdge(Object) Adjacency tests}
+ * are very fast and happen in almost constant time.
  *
  * <p>
  * {@link SuccinctIntUndirectedGraph} is a much slower implementation with a similar footprint using
  * {@link Integer} as edge type. Please read the {@linkplain org.jgrapht.sux4j class documentation}
  * for more information.
+ *
+ * <p>
+ * For convenience, and as a compromise with the approach of {@link SuccinctIntUndirectedGraph},
+ * this class provides methods {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getEdgeFromIndex(long)
+ * getEdgeFromIndex()} and
+ * {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getIndexFromEdge(it.unimi.dsi.fastutil.ints.IntIntPair)
+ * getIndexFromEdge()} that map bijectively the edge set into a contiguous set of longs.
  *
  * @author Sebastiano Vigna
  * @see SuccinctIntUndirectedGraph
@@ -128,11 +135,11 @@ public class SuccinctUndirectedGraph
      *
      * <p>
      * This constructor just builds a {@link SparseIntUndirectedGraph} and delegates to the
-     * {@linkplain #SuccinctIntUndirectedGraph(Graph) main constructor}.
+     * {@linkplain #SuccinctUndirectedGraph(Graph) main constructor}.
      *
      * @param numVertices the number of vertices.
      * @param edges the edge list.
-     * @see #SuccinctIntUndirectedGraph(Graph)
+     * @see #SuccinctUndirectedGraph(Graph)
      */
 
     public SuccinctUndirectedGraph(
@@ -209,15 +216,15 @@ public class SuccinctUndirectedGraph
      *
      * @param e an edge of the graph.
      * @return the index associated with the edge, or &minus;1 if the edge is not part of the graph.
-     * @see #getEdgeFromIndex(int)
+     * @see #getEdgeFromIndex(long)
      */
-    public int getIndexFromEdge(final IntIntSortedPair e)
+    public long getIndexFromEdge(final IntIntSortedPair e)
     {
         final int source = e.firstInt();
         final int target = e.secondInt();
         if (source < 0 || source >= n || target < 0 || target >= n)
             throw new IllegalArgumentException();
-        return (int) successors.indexOfUnsafe(((long) source << sourceShift) + target);
+        return successors.indexOfUnsafe(((long) source << sourceShift) + target);
     }
 
     /**
@@ -225,9 +232,9 @@ public class SuccinctUndirectedGraph
      *
      * @param i an index between 0 (included) and the number of edges (excluded).
      * @return the pair with index {@code i}.
-     * @see #getIndexFromEdge(IntIntPair)
+     * @see #getIndexFromEdge(IntIntSortedPair)
      */
-    public IntIntSortedPair getEdgeFromIndex(final int i)
+    public IntIntSortedPair getEdgeFromIndex(final long i)
     {
         if (i < 0 || i >= m)
             throw new IllegalArgumentException();

@@ -101,7 +101,7 @@ public abstract class AbstractSuccinctDirectedGraph<E>
         private long next = -1;
         private int[] s = IntArrays.EMPTY_ARRAY;
 
-        public CumulativeSuccessors(
+        protected CumulativeSuccessors(
             final Graph<Integer, E> graph, final Function<Integer, Iterable<E>> succ,
             final boolean strict)
         {
@@ -161,7 +161,7 @@ public abstract class AbstractSuccinctDirectedGraph<E>
         private int i = -1;
         private long cumul = 0;
 
-        public CumulativeDegrees(final int n, final Function<Integer, Integer> degreeOf)
+        protected CumulativeDegrees(final int n, final Function<Integer, Integer> degreeOf)
         {
             this.n = n;
             this.degreeOf = degreeOf;
