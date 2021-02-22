@@ -53,8 +53,8 @@
  * the number of edges.
  *
  * <p>
- * Both classes provide methods {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getEdgeFromIndex(int)
- * getEdgeFromIndex()} and
+ * Both classes provide methods
+ * {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getEdgeFromIndex(long) getEdgeFromIndex()} and
  * {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getIndexFromEdge(it.unimi.dsi.fastutil.ints.IntIntPair)
  * getIndexFromEdge()} that map bijectively the edge set into a contiguous set of longs. In this way
  * the user can choose when and how to use the feature (e.g., to store compactly data associated to

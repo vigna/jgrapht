@@ -64,7 +64,7 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  *
  * <p>
  * For convenience, and as a compromise with the approach of {@link SuccinctIntUndirectedGraph},
- * this class provides methods {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getEdgeFromIndex(int)
+ * this class provides methods {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getEdgeFromIndex(long)
  * getEdgeFromIndex()} and
  * {@link org.jgrapht.sux4j.SuccinctDirectedGraph#getIndexFromEdge(it.unimi.dsi.fastutil.ints.IntIntPair)
  * getIndexFromEdge()} that map bijectively the edge set into a contiguous set of longs.
@@ -216,7 +216,7 @@ public class SuccinctUndirectedGraph
      *
      * @param e an edge of the graph.
      * @return the index associated with the edge, or &minus;1 if the edge is not part of the graph.
-     * @see #getEdgeFromIndex(int)
+     * @see #getEdgeFromIndex(long)
      */
     public long getIndexFromEdge(final IntIntSortedPair e)
     {
