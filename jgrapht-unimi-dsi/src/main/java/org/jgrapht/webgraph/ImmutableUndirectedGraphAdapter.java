@@ -92,13 +92,13 @@ import it.unimi.dsi.webgraph.NodeIterator;
  * skippable iterators} with fast skipping, adjacency can be tested more quickly (e.g., essentially
  * in constant time in the case of {@link EFGraph}).
  *
- * @see ImmutableBigGraphAdapter
+ * @see AbstractImmutableBigGraphAdapter
  * @author Sebastiano Vigna
  */
 
 public class ImmutableUndirectedGraphAdapter
     extends
-    ImmutableGraphAdapter<IntIntSortedPair>
+    AbstractImmutableGraphAdapter<IntIntSortedPair>
     implements
     FlyweightPrototype<ImmutableUndirectedGraphAdapter>
 {

@@ -56,7 +56,7 @@ import it.unimi.dsi.lang.FlyweightPrototype;
 
 public class ImmutableUndirectedBigGraphAdapter
     extends
-    ImmutableBigGraphAdapter<LongLongSortedPair>
+    AbstractImmutableBigGraphAdapter<LongLongSortedPair>
     implements
     FlyweightPrototype<ImmutableUndirectedBigGraphAdapter>
 {
