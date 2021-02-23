@@ -9,10 +9,12 @@
  * adjacency matrix of a graph are represented as a monotone sequence of natural numbers.
  *
  * <p>
- * The memory footprint of these implementation is close to the information-theoretical lower bound;
- * the actual space used can be easily measured as all implementations are serializable, and their
- * in-memory footprint is very closed to the on-disk footprint. Usually the size is a few times
- * smaller than that of a {@link org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph
+ * The memory footprint of these implementation is close to the information-theoretical lower bound
+ * in the undirected case, and close to twice the information-theoretical lower bound in the
+ * directed case, because the transposed graph must be stored separately. The actual space used can
+ * be easily measured as all implementations are serializable, and their in-memory footprint is very
+ * closed to the on-disk footprint. Usually the size is a few times smaller than that of a
+ * {@link org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph
  * SparseIntDirectedGraph}/{@link org.jgrapht.opt.graph.sparse.SparseIntUndirectedGraph
  * SparseIntUndirectedGraph}.
  *

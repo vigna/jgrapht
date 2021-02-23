@@ -52,7 +52,7 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  *
  * <p>
  * If the vertex set is compact (i.e., vertices are numbered from 0 consecutively), space usage will
- * be close to the information-theoretical lower bound (typically, a few times smaller than a
+ * be close to twice the information-theoretical lower bound (typically, a few times smaller than a
  * {@link SparseIntDirectedGraph}).
  *
  * <p>
