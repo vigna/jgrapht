@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.jgrapht.GraphIterables;
 import org.jgrapht.webgraph.ImmutableDirectedGraphAdapter;
-import org.jgrapht.webgraph.ImmutableGraphAdapter;
 
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
@@ -33,7 +32,7 @@ import it.unimi.dsi.webgraph.ImmutableGraph;
 public class ImmutableGraphSpeedTest {
 
 	public static void main(final String args[]) throws IOException, ClassNotFoundException {
-        final ImmutableGraphAdapter<IntIntPair> graph = new ImmutableDirectedGraphAdapter(
+        final ImmutableDirectedGraphAdapter graph = new ImmutableDirectedGraphAdapter(
             ImmutableGraph.load(args[0]), ImmutableGraph.load(args[1]));
 
         final int n = (int) graph.iterables().vertexCount();
