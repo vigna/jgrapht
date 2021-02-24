@@ -23,10 +23,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.jgrapht.Graph;
 import org.jgrapht.GraphIterables;
 import org.jgrapht.alg.util.Pair;
+import org.jgrapht.opt.graph.sparse.IncomingEdgesSupport;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
 import com.google.common.collect.Iterables;
@@ -51,7 +54,8 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * <p>
  * If the vertex set is compact (i.e., vertices are numbered from 0 consecutively), space usage will
  * be close to twice the information-theoretical lower bound (typically, a few times smaller than a
- * {@link SparseIntDirectedGraph}).
+ * {@link SparseIntDirectedGraph}). If you {@link #SuccinctDirectedGraph(Graph, boolean) drop
+ * support for incoming edges} the space will close to the information-theoretical lower bound .
  *
  * <p>
  * All accessors are very fast. {@linkplain org.jgrapht.Graph#containsEdge(Object) Adjacency tests}
@@ -91,13 +95,16 @@ public class SuccinctDirectedGraph
     private final EliasFanoMonotoneLongBigList predecessors;
 
     /**
-     * Creates a new immutable succinct directed graph from a given directed graph.
+     * Creates a new immutable succinct directed graph from a given directed graph, choosing whether
+     * to support incoming edges.
      *
      * @param graph a directed graph: for good results, vertices should be numbered consecutively
      *        starting from 0.
+     * @param incomingEdgesSupport whether to support incoming edges or not.
      * @param <E> the graph edge type
      */
-    public <E> SuccinctDirectedGraph(final Graph<Integer, E> graph)
+    public <
+        E> SuccinctDirectedGraph(final Graph<Integer, E> graph, final boolean incomingEdgesSupport)
     {
         super((int) graph.iterables().vertexCount(), (int) graph.iterables().edgeCount());
 
@@ -116,21 +123,42 @@ public class SuccinctDirectedGraph
 
         cumulativeOutdegrees = new EliasFanoIndexedMonotoneLongBigList(
             n + 1, m, new CumulativeDegrees(n, graph::outDegreeOf));
-        cumulativeIndegrees =
-            new EliasFanoMonotoneLongBigList(n + 1, m, new CumulativeDegrees(n, graph::inDegreeOf));
         assert cumulativeOutdegrees.getLong(cumulativeOutdegrees.size64() - 1) == m;
-        assert cumulativeIndegrees.getLong(cumulativeIndegrees.size64() - 1) == m;
 
         successors = new EliasFanoIndexedMonotoneLongBigList(
             m, (long) n << sourceShift,
             new CumulativeSuccessors<>(graph, iterables::outgoingEdgesOf, true));
-        predecessors = new EliasFanoIndexedMonotoneLongBigList(
-            m, (long) n * n - m,
-            new CumulativeSuccessors<>(graph, iterables::incomingEdgesOf, false));
+
+        if (incomingEdgesSupport) {
+            cumulativeIndegrees = new EliasFanoMonotoneLongBigList(
+                n + 1, m, new CumulativeDegrees(n, graph::inDegreeOf));
+            assert cumulativeIndegrees.getLong(cumulativeIndegrees.size64() - 1) == m;
+
+            predecessors = new EliasFanoIndexedMonotoneLongBigList(
+                m, (long) n * n - m,
+                new CumulativeSuccessors<>(graph, iterables::incomingEdgesOf, false));
+        }
+        else {
+            cumulativeIndegrees = predecessors = null;
+        }
     }
 
     /**
-     * Creates a new immutable succinct directed graph from an edge list.
+     * Creates a new immutable succinct directed graph from a given directed graph, supporting both
+     * outgoing and incoming edges.
+     *
+     * @param graph a directed graph: for good results, vertices should be numbered consecutively
+     *        starting from 0.
+     * @param <E> the graph edge type
+     */
+    public <E> SuccinctDirectedGraph(final Graph<Integer, E> graph)
+    {
+        this(graph, true);
+    }
+
+    /**
+     * Creates a new immutable succinct directed graph from an edge list, choosing whether to
+     * support incoming edges.
      *
      * <p>
      * This constructor just builds a {@link SparseIntDirectedGraph} and delegates to the
@@ -138,13 +166,83 @@ public class SuccinctDirectedGraph
      *
      * @param numVertices the number of vertices.
      * @param edges the edge list.
+     * @param incomingEdgesSupport whether to support incoming edges or not.
+     * @see #SuccinctDirectedGraph(Graph)
+     */
+
+    public SuccinctDirectedGraph(
+        final int numVertices, final List<Pair<Integer, Integer>> edges,
+        final boolean incomingEdgesSupport)
+    {
+        this(new SparseIntDirectedGraph(numVertices, edges, incomingEdgesSupport ? IncomingEdgesSupport.FULL_INCOMING_EDGES
+            : IncomingEdgesSupport.NO_INCOMING_EDGES));
+    }
+
+    /**
+     * Creates a new immutable succinct directed graph from an edge list, supporting both outgoing
+     * and incoming edges.
+     * <p>
+     * This constructor just builds a {@link SparseIntDirectedGraph} and delegates to the
+     * {@linkplain #SuccinctDirectedGraph(Graph) main constructor}.
+     *
+     * @param numVertices the number of vertices.
+     * @param edges the edge list.
+     * @param incomingEdgesSupport whether to support incoming edges or not.
      * @see #SuccinctDirectedGraph(Graph)
      */
 
     public SuccinctDirectedGraph(final int numVertices, final List<Pair<Integer, Integer>> edges)
     {
-        this(new SparseIntDirectedGraph(numVertices, edges));
+        this(numVertices, edges, true);
     }
+
+    /**
+     * Creates a new immutable succinct directed graph from a supplier of streams of edges, choosing
+     * whether to support incoming edges.
+     *
+     * <p>
+     * This constructor just builds a {@link SparseIntDirectedGraph} and delegates to the
+     * {@linkplain #SuccinctDirectedGraph(Graph) main constructor}.
+     *
+     * @param numVertices the number of vertices.
+     * @param numEdges the number of edges.
+     * @param edges a supplier of streams of edges.
+     * @param incomingEdgesSupport whether to support incoming edges or not.
+     * @see #SuccinctDirectedGraph(Graph)
+     */
+
+    public SuccinctDirectedGraph(
+        final int numVertices, final int numEdges,
+        final Supplier<Stream<Pair<Integer, Integer>>> edges, final boolean incomingEdgesSupport)
+    {
+        this(
+            new SparseIntDirectedGraph(
+                numVertices, numEdges, edges,
+                incomingEdgesSupport ? IncomingEdgesSupport.FULL_INCOMING_EDGES
+                    : IncomingEdgesSupport.NO_INCOMING_EDGES));
+    }
+
+    /**
+     * Creates a new immutable succinct directed graph from a supplier of streams of edges,
+     * supporting both outgoing and incoming edges.
+     *
+     * <p>
+     * This constructor just builds a {@link SparseIntDirectedGraph} and delegates to the
+     * {@linkplain #SuccinctDirectedGraph(Graph) main constructor}.
+     *
+     * @param numVertices the number of vertices.
+     * @param numEdges the number of edges.
+     * @param edges a supplier of streams of edges.
+     * @see #SuccinctDirectedGraph(Graph)
+     */
+
+    public SuccinctDirectedGraph(
+        final int numVertices, final int numEdges,
+        final Supplier<Stream<Pair<Integer, Integer>>> edges)
+    {
+        this(numVertices, numEdges, edges, true);
+    }
+
 
     @Override
     public boolean containsEdge(final IntIntPair e)
