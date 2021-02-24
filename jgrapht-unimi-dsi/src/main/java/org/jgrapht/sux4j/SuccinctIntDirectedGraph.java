@@ -185,7 +185,6 @@ public class SuccinctIntDirectedGraph
      *
      * @param numVertices the number of vertices.
      * @param edges the edge list.
-     * @param incomingEdgesSupport whether to support incoming edges or not.
      * @see #SuccinctIntDirectedGraph(Graph)
      */
 
