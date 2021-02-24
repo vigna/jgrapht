@@ -39,7 +39,7 @@ import it.unimi.dsi.fastutil.longs.LongSets;
  * @author Sebastiano Vigna
  */
 
-public abstract class ImmutableBigGraphAdapter<E extends LongLongPair>
+public abstract class AbstractImmutableBigGraphAdapter<E extends LongLongPair>
     extends
     AbstractGraph<Long, E>
 {
@@ -55,7 +55,7 @@ public abstract class ImmutableBigGraphAdapter<E extends LongLongPair>
      */
     protected long m = -1;
 
-    protected ImmutableBigGraphAdapter(final ImmutableGraph immutableGraph)
+    protected AbstractImmutableBigGraphAdapter(final ImmutableGraph immutableGraph)
     {
         this.immutableGraph = immutableGraph;
         this.n = immutableGraph.numNodes();
