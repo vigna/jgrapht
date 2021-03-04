@@ -57,7 +57,7 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * {@link SparseIntUndirectedGraph}).
  *
  * <p>
- * {@linkplain org.jgrapht.GraphIterables#outgoingEdgesOf(Object) Enumeration of edges} is is very
+ * {@linkplain org.jgrapht.GraphIterables#outgoingEdgesOf(Object) Enumeration of edges} is very
  * slow. {@linkplain org.jgrapht.Graph#containsEdge(Object) Adjacency tests} are very fast and
  * happen in almost constant time.
  *

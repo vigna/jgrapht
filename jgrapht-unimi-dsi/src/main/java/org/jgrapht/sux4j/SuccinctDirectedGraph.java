@@ -62,7 +62,7 @@ import it.unimi.dsi.sux4j.util.EliasFanoMonotoneLongBigList;
  * are very fast and happen in almost constant time.
  *
  * <p>
- * {@link SuccinctDirectedGraph} is a much slower implementation with a similar footprint using
+ * {@link SuccinctIntDirectedGraph} is a much slower implementation with a similar footprint using
  * {@link Integer} as edge type. Please read the {@linkplain org.jgrapht.sux4j class documentation}
  * for more information.
  *

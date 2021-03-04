@@ -48,7 +48,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
  * <var>k</var>-th element of the sequence and some bit shifting (the encoding
  * <var>x</var><var>n</var> + <var>y</var> would be slightly more compact, but much slower to
  * decode). Since we know the list of cumulative outdegrees, we know which range of indices
- * corresponds to the edges outgoing from each vertex. If we need to now whether
+ * corresponds to the edges outgoing from each vertex. If we need to know whether
  * <var>x</var>&nbsp;&rarr;&nbsp;<var>y</var> is an edge we just look for
  * <var>x</var>2<sup>&lceil;log&nbsp;<var>n</var>&rceil;</sup> + <var>y</var> in the sequence.
  *
