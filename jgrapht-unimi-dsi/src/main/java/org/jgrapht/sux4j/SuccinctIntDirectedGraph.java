@@ -173,7 +173,8 @@ public class SuccinctIntDirectedGraph
         this(
             new SparseIntDirectedGraph(
                 numVertices, edges, incomingEdgesSupport ? IncomingEdgesSupport.FULL_INCOMING_EDGES
-                    : IncomingEdgesSupport.NO_INCOMING_EDGES));
+                    : IncomingEdgesSupport.NO_INCOMING_EDGES),
+            incomingEdgesSupport);
     }
 
     /**

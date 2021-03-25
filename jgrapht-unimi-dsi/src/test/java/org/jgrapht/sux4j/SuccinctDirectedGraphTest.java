@@ -23,9 +23,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jgrapht.alg.util.Pair;
 import org.jgrapht.generate.GnpRandomGraphGenerator;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -264,5 +266,14 @@ public class SuccinctDirectedGraphTest
             final int y = random.nextInt(n);
             assertEquals(s.containsEdge(x, y), t.containsEdge(x, y));
         }
+    }
+
+    @Test
+    public void testOutgoingOnly()
+    {
+        final List<Pair<Integer, Integer>> edges =
+            List.of(Pair.of(0, 1), Pair.of(0, 2), Pair.of(1, 2), Pair.of(2, 1));
+        final SuccinctDirectedGraph s = new SuccinctDirectedGraph(3, edges, false);
+        assertEquals(2, s.outDegreeOf(0));
     }
 }

@@ -174,8 +174,10 @@ public class SuccinctDirectedGraph
         final int numVertices, final List<Pair<Integer, Integer>> edges,
         final boolean incomingEdgesSupport)
     {
-        this(new SparseIntDirectedGraph(numVertices, edges, incomingEdgesSupport ? IncomingEdgesSupport.FULL_INCOMING_EDGES
-            : IncomingEdgesSupport.NO_INCOMING_EDGES));
+        this(
+            new SparseIntDirectedGraph(
+                numVertices, edges, incomingEdgesSupport ? IncomingEdgesSupport.FULL_INCOMING_EDGES
+            : IncomingEdgesSupport.NO_INCOMING_EDGES), incomingEdgesSupport);
     }
 
     /**
