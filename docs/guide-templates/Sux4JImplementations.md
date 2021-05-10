@@ -17,10 +17,10 @@ graphs in this form from the [LAW web site](http://law.di.unimi.it/datasets.php)
 The typical use case for these adapters is:
 
 - You need a compact format.
-- You have less than 2<sup>32</sup> vertices and less than 2<sup>32</sup> edges.
+- You have less than 2<sup>31</sup> vertices and less than 2<sup>31</sup> edges.
 - You have metadata associated to the vertices and to the edges.
 
-Such metadata can be easily stored in an array indexed by the vertices or
+Such metadata can be easily stored in an array or list indexed by the vertices or
 the edges. If you have metadata on the vertices, only, or if your number
 of vertices or edges does not satisfy the limitations above, a [WebGraph
 adapter](https://jgrapht.org/javadoc/org.jgrapht.unimi.dsi/org/jgrapht/webgraph/package-summary.html)
@@ -30,6 +30,9 @@ The two main implementations are [`SuccinctDirectedGraph`](https://jgrapht.org/j
 and [`SuccinctUndirectedGraph`](https://jgrapht.org/javadoc/org.jgrapht.unimi.dsi/org/jgrapht/sux4j/SuccinctUndirectedGraph.html).
 They both use pairs to represent edges, but you can easily [map edges](https://jgrapht.org/javadoc/org.jgrapht.unimi.dsi/org/jgrapht/sux4j/SuccinctDirectedGraph.html#getEdgeFromIndex%28long%29) 
 in a contiguous segment of integers starting from zero; the mapping is reasonably fast.
+
+Note that one of the benefits of the succinct representation used by these classes is that
+[adjacency tests](https://jgrapht.org/javadoc/org.jgrapht.core/org/jgrapht/Graph.html#containsEdge%28V,V%29) are very fast.
 
 If you need, however, an implementation whose vertex and edge type is
 `Integer` (for example, for usage with [Python

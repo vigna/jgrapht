@@ -23,7 +23,7 @@ The typical use case for these adapters is:
 
 Such metadata can be easily stored in an array indexed by the vertices,
 or possibly by a [`fastutil` big array](https://fastutil.di.unimi.it/docs/it/unimi/dsi/fastutil/BigArrays.html)
-if you have more than 2<sup>32</sup> vertices (lists and [big lists](https://fastutil.di.unimi.it/docs/it/unimi/dsi/fastutil/BigList.html) are another option).
+if you have more than 2<sup>31</sup> vertices (lists and [big lists](https://fastutil.di.unimi.it/docs/it/unimi/dsi/fastutil/BigList.html) are another option).
 
 If you need to associate metadata with the arcs, and manage the graph in a
 compact format, a succinct representation from the package
@@ -32,8 +32,8 @@ might be more appropriate, as those representation associate with
 each edge an integer in a contiguous range starting from zero.
 
 WebGraph has two versions: the standard version manages graph with
-at most 2<sup>32</sup> vertices, whereas the big version manages graphs with
-at most 2<sup>64</sup> vertices. For each version, there is a directed
+at most 2<sup>31</sup> vertices, whereas the big version manages graphs with
+at most 2<sup>63</sup> vertices. For each version, there is a directed
 adapter and an undirected adapter. The Javadoc documentation of
 [`ImmutableDirectedGraphAdapter`](https://jgrapht.org/javadoc/org.jgrapht.unimi.dsi/org/jgrapht/webgraph/ImmutableDirectedGraphAdapter.html)
 and [`ImmutableUndirectedGraphAdapter`](https://jgrapht.org/javadoc/org.jgrapht.unimi.dsi/org/jgrapht/webgraph/ImmutableUndirectedGraphAdapter.html)
