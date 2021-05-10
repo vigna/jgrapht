@@ -47,3 +47,4 @@ uses compression techniques that work well with web graphs;
 uses [succinct techniques](https://en.wikipedia.org/wiki/Succinct_data_structure), 
 which might be more useful with less repetitive graphs such as social graphs. In particular, `EFGraph` implements a
 [fast adjacency test](https://jgrapht.org/javadoc/org.jgrapht.core/org/jgrapht/Graph.html#containsEdge%28V,V%29).
+You should choose the representation that better suits your data and access primitives.
