@@ -6,7 +6,12 @@ title: Sux4J-Based Implementations
 
 [Sux4J](https://sux4j.di.unimi.it/) is a library containing
 implementations of [succinct data structures](https://en.wikipedia.org/wiki/Succinct_data_structure)
-in Java. Such structures can be used to store graphs in a very compact form.
+in Java. Such structures can be used to store graphs in a very compact form. For example,
+the memory footprint of the [English Wikipedia graph in 2013](http://law.di.unimi.it/webdata/enwiki-2013/)
+would be of several gigabytes in a trivial object-based representation, it is of 1.6GB in JGraphT's
+[sparse representation](https://jgrapht.org/javadoc/org.jgrapht.opt/org/jgrapht/opt/graph/sparse/SparseIntDirectedGraph.html),
+but it is of just 500MB in a succinct representation. The denser the graph, the more
+these differences will be marked.
 
 The implementations in the package
 [org.jgrapht.sux4j](https://jgrapht.org/javadoc/org.jgrapht.unimi.dsi/org/jgrapht/sux4j/package-summary.html)
@@ -18,7 +23,8 @@ The typical use case for these adapters is:
 
 - You need a compact format.
 - You have less than 2<sup>31</sup> vertices and less than 2<sup>31</sup> edges.
-- You have metadata associated to the vertices and to the edges.
+- You have metadata associated with the vertices and with the edges.
+- Optionally, you need fast [adjacency tests](https://jgrapht.org/javadoc/org.jgrapht.core/org/jgrapht/Graph.html#containsEdge%28V,V%29).
 
 Such metadata can be easily stored in an array or list indexed by the vertices or
 the edges. If you have metadata on the vertices, only, or if your number
