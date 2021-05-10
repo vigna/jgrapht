@@ -8,7 +8,7 @@ title: Sux4J-Based Implementations
 implementations of [succinct data structures](https://en.wikipedia.org/wiki/Succinct_data_structure)
 in Java. Such structures can be used to store graphs in a very compact form. For example,
 the memory footprint of the [English Wikipedia graph in 2013](http://law.di.unimi.it/webdata/enwiki-2013/)
-would be of several gigabytes in a trivial object-based representation, it is of 1.6GB in JGraphT's
+would be of a few gigabytes in a trivial object-based representation, it is of 1.6GB in JGraphT's
 [sparse representation](https://jgrapht.org/javadoc/org.jgrapht.opt/org/jgrapht/opt/graph/sparse/SparseIntDirectedGraph.html),
 but it is of just 500MB in a succinct representation. The denser the graph, the more
 these differences will be marked.
